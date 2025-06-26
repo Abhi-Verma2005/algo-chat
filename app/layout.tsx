@@ -5,6 +5,7 @@ import { Navbar } from "@/components/custom/navbar";
 import { ThemeProvider } from "@/components/custom/theme-provider";
 
 import "./globals.css";
+import { SidebarProvider } from "@/contexts/SidebarProvider";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://gemini.vercel.ai"),
@@ -20,16 +21,20 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <ThemeProvider
+        <SidebarProvider>
+          <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
-        >
+          >
           <Toaster position="top-center" />
-          <Navbar />
+          {/* <Navbar /> */}
           {children}
         </ThemeProvider>
+        </SidebarProvider>
+        
+        
       </body>
     </html>
   );

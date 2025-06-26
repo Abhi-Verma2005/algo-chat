@@ -5,6 +5,8 @@ import { geminiProModel } from "@/ai";
 import {
   getUserProgress,
   getRecentActivity,
+  getFilteredQuestions,
+  getTags,
 } from "@/ai/actions";
 import { auth } from "@/app/(auth)/auth";
 import {
@@ -19,10 +21,13 @@ export async function POST(request: Request) {
 
   const session = await auth();
 
+  
   if (!session || !session.user) {
     return new Response("Unauthorized", { status: 401 });
   }
 
+  // const pvtModel = geminiProModel(session.user.apikey || "NOT_FOUND")
+  
   const coreMessages = convertToCoreMessages(messages).filter(
     (message) => message.content.length > 0,
   );
@@ -51,6 +56,7 @@ You are an expert DSA (Data Structures & Algorithms) tutor helping users master 
 
 ## Guidelines:
 - Always check user progress before making recommendations
+- Don't confirm too much, which question to solve i predefined you need not to ask much about what to fetch
 - Use encouraging language while being realistic about difficulty
 - Break down complex problems into manageable steps
 - Reference user's past solved problems to build confidence
@@ -62,7 +68,7 @@ You are an expert DSA (Data Structures & Algorithms) tutor helping users master 
 
 Remember: Your goal is to guide users to understand concepts and solve problems independently, not to give them answers directly.
     `,
-    messages: coreMessages,
+    messages: coreMessages.slice(-10),
     tools: {
       // =============================================
       // USER PROGRESS & ANALYTICS TOOLS
@@ -75,7 +81,6 @@ Remember: Your goal is to guide users to understand concepts and solve problems 
         }),
         execute: async ({ timeRange }) => {
           const userId = session.user!.id;
-          console.log("UserId: ", userId)
           if(!userId) {
             return null
           }
@@ -85,6 +90,25 @@ Remember: Your goal is to guide users to understand concepts and solve problems 
           return progress;
         },
       },
+     getFilteredQuestionsToSolve: {
+        description: "Fetch a curated list of DSA questions by passing SCREAMING_SNAKE_CASE topic name based on selected topics and difficulty levels, along with user-specific metadata like solved/bookmarked status.",
+        parameters: z.object({
+          topics: z.array(z.string()).min(1).describe("List of topic tags to filter questions by"),
+          limit: z.number().min(1).max(100).default(50).describe("Maximum number of questions to fetch (default 50)")
+        }),
+        execute: async ({ topics, limit }) => {
+          const userId = session.user!.id;
+          if(!userId) {
+            return null
+          }
+
+          const response = await getFilteredQuestions({ topics, userId, limit });
+
+          console.log(response)
+          
+          return response
+        }
+      }
 
       // getTopicSpecificProgress: {
       //   description: "Get detailed progress for a specific DSA topic (arrays, linked lists, trees, graphs, etc.)",
@@ -109,18 +133,7 @@ Remember: Your goal is to guide users to understand concepts and solve problems 
       //   },
       // },
 
-      getRecentActivity: {
-        description: "Get user's recent problem-solving activity and patterns",
-        parameters: z.object({
-          days: z.number().default(7).describe("Number of days to look back"),
-          includeDetails: z.boolean().default(true).describe("Include problem details")
-        }),
-        execute: async ({ days }) => {
-          const userId = session.user!.id;
-          if(!userId) return null
-          return await getRecentActivity(userId, days);
-        },
-      },
+      
 
       // =============================================
       // PROBLEM RECOMMENDATION & DISCOVERY TOOLS

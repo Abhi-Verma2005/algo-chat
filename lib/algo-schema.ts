@@ -510,11 +510,13 @@ export const _QuestionToTempRelations = relations(_QuestionToTemp, ({ one }) => 
   }),
 }));
 
-export const questionTagMap = pgTable('question_tag_map', {
-  questionId: uuid('question_id').notNull().references(() => questions.id),
-  tagId: uuid('tag_id').notNull().references(() => QuestionTag.id),
+export const questionToQuestionTag = pgTable('_QuestionToQuestionTag', {
+  A: varchar('A').notNull(), // Question ID
+  B: varchar('B').notNull(), // QuestionTag ID
 }, (table) => ({
-  pk: primaryKey({ columns: [table.questionId, table.tagId] }),
+  pk: primaryKey({ columns: [table.A, table.B] }),
+  AIdx: index('_QuestionToQuestionTag_A_index').on(table.A),
+  BIdx: index('_QuestionToQuestionTag_B_index').on(table.B),
 }));
 
 export const _ContestPermissionToUserRelations = relations(_ContestPermissionToUser, ({ one }) => ({

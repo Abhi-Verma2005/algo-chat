@@ -17,6 +17,7 @@ import {
 export const Navbar = async () => {
   let session = await auth();
 
+
   return (
     <>
       <div className="bg-background absolute top-0 left-0 w-dvw py-2 px-3 justify-between flex flex-row items-center z-30">

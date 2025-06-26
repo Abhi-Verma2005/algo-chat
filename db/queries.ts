@@ -6,7 +6,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
 import { chat } from "./schema";
-import { User as users } from "@/lib/algo-schema";
+import { User, UserApiKey, User as users } from "@/lib/algo-schema";
 import { externalDb } from "@/lib/algo-db";
 
 // Your current database for chat and reservation data
@@ -47,17 +47,25 @@ export async function authenticateUser(email: string, password: string) {
 export async function getExternalUser(userEmail: string) {
   try {
     const usersFound = await externalDb
-      .select()
+      .select({
+        password: users.password,
+        username: users.username,
+        email: users.email,
+        id: users.id,
+        apikey: UserApiKey.key
+      })
       .from(users)
+      .innerJoin(UserApiKey, eq(users.id, UserApiKey.userId))
       .where(eq(users.email, userEmail));
-    
+
+    console.log("Haliluya", usersFound.length > 0 ? usersFound[0] : null)
+
     return usersFound.length > 0 ? usersFound[0] : null;
   } catch (error) {
     console.error("Failed to get user from external database: ", error);
     throw error;
   }
 }
-
 export async function getExternalUserByEmail(email: string) {
   try {
     const usersFound = await externalDb

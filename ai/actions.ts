@@ -10,11 +10,20 @@ import {
   Submission,
   QuestionTag,
   _QuestionToQuestionTagRelations,
-  questionTagMap,
+  questionToQuestionTag,
+  Bookmark,
 } from "@/lib/algo-schema";
-import { and, desc, eq, gte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { isThisWeek, isToday } from "date-fns";
 
+
+const DIFFICULTY_ORDER = {
+  BEGINNER: 1,
+  EASY: 2,
+  MEDIUM: 3,
+  HARD: 4,
+  VERYHARD: 5
+} as const;
 // Types for better error handling
 interface DatabaseError extends Error {
   code?: string;
@@ -33,6 +42,31 @@ interface UserInfo {
   userBrief: string | null;
 }
 
+interface FilteredQuestion {
+  id: string;
+  title: string;
+  slug: string;
+  difficulty: 'BEGINNER' | 'EASY' | 'MEDIUM' | 'HARD' | 'VERYHARD';
+  points: number;
+  leetcodeUrl: string;
+  inArena: boolean;
+  arenaAddedAt: Date | null;
+  index: number;
+  isSolved: boolean;
+  isBookmarked: boolean;
+  questionTags: { name: string }[];
+}
+
+interface FilterQuestionsOptions {
+  topics: string[];
+  userId: string;
+  limit?: number;
+}
+
+interface FilterQuestionsResult {
+  questionsWithSolvedStatus: FilteredQuestion[];
+  individualPoints: number;
+}
 interface FlightStatusResult {
   flightNumber: string;
   departure: {
@@ -289,10 +323,10 @@ export async function getUserProgress(
     const dateFilter = getDateFilter(timeRange);
     
     // 1. Get basic user info with LeetCode stats
-    console.log("Fetching user info for userId:", userId);
     
     let userInfo: UserInfo[] | null = null;
     try {
+      //@ts-expect-error: no need here
       userInfo = await externalDb
         .select({
           username: User.username,
@@ -372,7 +406,7 @@ export async function getUserProgress(
           hardCount: sql<number>`count(distinct case when ${questions.difficulty} = 'HARD' and ${Submission.status} = 'ACCEPTED' then ${questions.id} end)::int`
         })
         .from(QuestionTag)
-        .innerJoin(questions, eq(questionTagMap.tagId, QuestionTag.id))
+        .innerJoin(questions, eq(questions, QuestionTag.id))
         .leftJoin(Submission, and(
           eq(Submission.questionId, questions.id),
           eq(Submission.userId, userId),
@@ -455,6 +489,189 @@ export async function getUserProgress(
   }
 }
 
+
+export async function getFilteredQuestions(
+  options: FilterQuestionsOptions
+): Promise<FilterQuestionsResult> {
+  try {
+    const { topics, userId, limit = 50 } = options;
+
+    const difficulties = ["BEGINNER", "EASY", "MEDIUM", "HARD", "VERYHARD"]
+
+    // Input validation
+    if (!userId?.trim()) {
+      throw new Error("User email is required");
+    }
+
+    if (!topics || !Array.isArray(topics) || topics.length === 0) {
+      throw new Error("Topics must be a non-empty array");
+    }
+    // Validate difficulty values
+    const validDifficulties = Object.keys(DIFFICULTY_ORDER) as Array<keyof typeof DIFFICULTY_ORDER>;
+    //@ts-expect-error: no need here
+    const invalidDifficulties = difficulties.filter(d => !validDifficulties.includes(d));
+    if (invalidDifficulties.length > 0) {
+      throw new Error(`Invalid difficulties: ${invalidDifficulties.join(', ')}`);
+    }
+
+    console.log("🔍 Filtering questions with options:", {
+      userId,
+      topics: topics.slice(0, 3), // Log first 3 for brevity
+      difficulties,
+      limit
+    });
+
+    // 1. Get user information
+    const user = await externalDb
+      .select({
+        id: User.id,
+        email: User.email,
+        individualPoints: User.individualPoints
+      })
+      .from(User)
+      .where(eq(User.id, userId))
+      .limit(1);
+
+    if (!user || user.length === 0) {
+      throw new Error(`User not found with id: ${userId}`);
+    }
+
+    const userPoints = user[0].individualPoints || 0;
+
+    // 2. Get questions with tags that match criteria
+    const filteredQuestions = await externalDb
+      .select({
+        id: questions.id,
+        title: questions.slug,
+        slug: questions.slug,
+        difficulty: questions.difficulty,
+        points: questions.points,
+        leetcodeUrl: questions.leetcodeUrl,
+        inArena: questions.inArena,
+        arenaAddedAt: questions.arenaAddedAt,
+        tagName: QuestionTag.name
+      })
+      .from(questions)
+      .innerJoin(questionToQuestionTag, eq(questions.id, questionToQuestionTag.A))
+      .innerJoin(QuestionTag, eq(questionToQuestionTag.B, QuestionTag.id))
+      .where(
+        and(
+          eq(questions.inArena, true),
+          inArray(QuestionTag.name, topics),
+          //@ts-expect-error: no need here
+          inArray(questions.difficulty, difficulties)
+        )
+      )
+      .limit(limit)
+
+    // 3. Group questions and collect tags
+    const questionMap = new Map<string, FilteredQuestion>();
+    
+    filteredQuestions.forEach(row => {
+      if (!questionMap.has(row.id)) {
+        questionMap.set(row.id, {
+          id: row.id,
+          title: row.title,
+          slug: row.slug,
+          difficulty: row.difficulty,
+          points: row.points,
+          leetcodeUrl: row.leetcodeUrl || '',
+          inArena: row.inArena || false,
+          arenaAddedAt: row.arenaAddedAt,
+          index: 0, // Will be set later
+          isSolved: false, // Will be set later
+          isBookmarked: false, // Will be set later
+          questionTags: []
+        });
+      }
+      
+      // Add tag to the question
+      const question = questionMap.get(row.id)!;
+      question.questionTags.push({ name: row.tagName });
+    });
+
+    // Convert map to array and sort
+    const questionsArray = Array.from(questionMap.values());
+    
+    // Sort questions following the same logic as Prisma version
+    const sortedQuestions = questionsArray.sort((a, b) => {
+      const diffA = DIFFICULTY_ORDER[a.difficulty];
+      const diffB = DIFFICULTY_ORDER[b.difficulty];
+      
+      if (diffA !== diffB) {
+        return diffA - diffB;
+      }
+      
+      if (!a.arenaAddedAt && !b.arenaAddedAt) return 0;
+      if (!a.arenaAddedAt) return 1;
+      if (!b.arenaAddedAt) return -1;
+      
+      return a.arenaAddedAt.getTime() - b.arenaAddedAt.getTime();
+    });
+
+    // 4. Get bookmarks for these questions
+    const questionIds = sortedQuestions.map(q => q.id);
+    
+    const bookmarks = await externalDb
+      .select({
+        questionId: Bookmark.questionId
+      })
+      .from(Bookmark)
+      .where(
+        and(
+          eq(Bookmark.userId, userId),
+          inArray(Bookmark.questionId, questionIds)
+        )
+      );
+
+    // 5. Get accepted submissions for these questions
+    const acceptedSubmissions = await externalDb
+      .select({
+        questionId: Submission.questionId
+      })
+      .from(Submission)
+      .where(
+        and(
+          eq(Submission.userId, userId),
+          eq(Submission.status, 'ACCEPTED'),
+          inArray(Submission.questionId, questionIds)
+        )
+      );
+
+    // 6. Create sets for quick lookup
+    const solvedQuestionIds = new Set(acceptedSubmissions.map(sub => sub.questionId));
+    const bookmarkedQuestionIds = new Set(bookmarks.map(bookmark => bookmark.questionId));
+
+    // 7. Add solved and bookmarked status, and set index
+    const questionsWithSolvedStatus = sortedQuestions.map((question, index) => ({
+      ...question,
+      index: index,
+      isSolved: solvedQuestionIds.has(question.id),
+      isBookmarked: bookmarkedQuestionIds.has(question.id)
+    }));
+
+    console.log("✅ Filtered questions successfully:", {
+      totalQuestions: questionsWithSolvedStatus.length,
+      userPoints
+    });
+
+    return {
+      questionsWithSolvedStatus,
+      individualPoints: userPoints
+    };
+
+  } catch (error) {
+    const err = error as Error;
+    console.error("❌ Failed to get filtered questions:", {
+      userId: options.userId,
+      error: err.message,
+      stack: err.stack,
+    });
+    
+    throw new Error(`Failed to get filtered questions: ${err.message}`);
+  }
+}
+
 // Calculate total solved problems from difficulty breakdown
 function calculateTotalSolved(submissionByDifficulty: SubmissionDifficulty[]): number {
   try {
@@ -464,6 +681,22 @@ function calculateTotalSolved(submissionByDifficulty: SubmissionDifficulty[]): n
   } catch (error) {
     console.error("❌ Error calculating total solved:", error);
     return 0;
+  }
+}
+
+export async function getTags() {
+  try {
+    const tags = await externalDb
+      .select({
+        name: QuestionTag.name
+      })
+      .from(QuestionTag)
+      .orderBy(desc(QuestionTag.createdAt));
+
+    return tags;
+  } catch (error) {
+    console.error("❌ Failed to fetch tags:", error);
+    throw new Error("Failed to fetch tags");
   }
 }
 
@@ -557,6 +790,7 @@ export async function getRecentActivity(userId: string, days: number) {
         score: Submission.score,
         createdAt: Submission.createdAt,
         // Question details
+        leetcodeUrl: questions.leetcodeUrl,
         questionSlug: questions.slug,
         difficulty: questions.difficulty,
         points: questions.points,
