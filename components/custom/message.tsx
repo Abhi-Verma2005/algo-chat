@@ -9,15 +9,6 @@ import { BotIcon, UserIcon } from "./icons";
 import { Markdown } from "./markdown";
 import { PreviewAttachment } from "./preview-attachment";
 
-// Import all your components
-import { Weather } from "./weather";
-import { AuthorizePayment } from "../flights/authorize-payment";
-import { DisplayBoardingPass } from "../flights/boarding-pass";
-import { CreateReservation } from "../flights/create-reservation";
-import { FlightStatus } from "../flights/flight-status";
-import { ListFlights } from "../flights/list-flights";
-import { SelectSeats } from "../flights/select-seats";
-import { VerifyPayment } from "../flights/verify-payment";
 import DSAProgressDashboard from "../dsa/Progress";
 import CompactQuestionsViewer from "../dsa/Questions";
 import { useSidebar } from "@/contexts/SidebarProvider";
@@ -42,37 +33,11 @@ export const Message = ({
     let component = null;
 
     switch (toolName) {
-      case "getWeather":
-        component = <Weather weatherAtLocation={result} />;
-        break;
-      case "displayFlightStatus":
-        component = <FlightStatus flightStatus={result} />;
-        break;
-      case "searchFlights":
-        component = <ListFlights chatId={chatId} results={result} />;
-        break;
-      case "selectSeats":
-        component = <SelectSeats chatId={chatId} availability={result} />;
-        break;
-      case "createReservation":
-        if (!Object.keys(result).includes("error")) {
-          component = <CreateReservation reservation={result} />;
-        }
-        break;
-      case "authorizePayment":
-        component = <AuthorizePayment intent={result} />;
-        break;
       case "getFilteredQuestionsToSolve":
         component = <CompactQuestionsViewer data={result} />;
         break;
       case "getUserProgressOverview":
         component = <DSAProgressDashboard data={result} />;
-        break;
-      case "displayBoardingPass":
-        component = <DisplayBoardingPass boardingPass={result} />;
-        break;
-      case "verifyPayment":
-        component = <VerifyPayment result={result} />;
         break;
       default:
         component = <div>{JSON.stringify(result, null, 2)}</div>;

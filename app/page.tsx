@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import { Brain, Code, Users, Zap, CheckCircle, ArrowRight, BookOpen, Target, MessageCircle, Star, Play, ChevronDown } from 'lucide-react';
+import Link from 'next/link';
 
 const SparkLanding = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -91,15 +92,19 @@ const SparkLanding = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-              <button className="group bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black px-8 py-3 rounded-xl text-lg font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all transform hover:scale-105 shadow-xl flex items-center space-x-3">
-                <MessageCircle className="w-5 h-5" />
-                <span>Start Learning</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
-              <button className="group border-2 border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 px-8 py-3 rounded-xl text-lg font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all flex items-center space-x-3">
-                <Play className="w-5 h-5" />
-                <span>Watch Demo</span>
-              </button>
+                <Link href={'/chat'}>
+                  <button className="group bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black px-8 py-3 rounded-xl text-lg font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all transform hover:scale-105 shadow-xl flex items-center space-x-3">
+                    <MessageCircle className="w-5 h-5" />
+                      <span>Start Learning</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </Link>
+              <Link href={"https://algo-journey-3siz.vercel.app/"} target='_blank' rel="noopener noreferrer">
+                <button className="group border-2 border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 px-8 py-3 rounded-xl text-lg font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all flex items-center space-x-3">
+                  <Play className="w-5 h-5" />
+                  <span>AlgoJourney</span>
+                </button>
+              </Link>
             </div>
 
             {/* Stats */}

@@ -21,14 +21,24 @@ import { Textarea } from "../ui/textarea";
 
 const suggestedActions = [
   {
-    title: "Help me book a flight",
-    label: "from San Francisco to London",
-    action: "Help me book a flight from San Francisco to London",
+    title: "Explain binary search",
+    label: "with step-by-step walkthrough",
+    action: "Explain binary search with step-by-step walkthrough",
   },
   {
-    title: "What is the status",
-    label: "of flight BA142 flying tmrw?",
-    action: "What is the status of flight BA142 flying tmrw?",
+    title: "Help with dynamic programming",
+    label: "understand memoization",
+    action: "Help me understand dynamic programming and memoization",
+  },
+  {
+    title: "Analyze time complexity",
+    label: "of my sorting algorithm",
+    action: "Analyze the time complexity of my sorting algorithm",
+  },
+  {
+    title: "Debug my code",
+    label: "find the issue in my solution",
+    action: "Help me debug my code and find the issue",
   },
 ];
 
@@ -173,7 +183,7 @@ export function MultimodalInput({
                       content: suggestedAction.action,
                     });
                   }}
-                  className="border-none bg-muted/50 w-full text-left border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded-lg p-3 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors flex flex-col"
+                  className="group border border-zinc-200/60 dark:border-zinc-700/60 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm w-full text-left text-zinc-700 dark:text-zinc-300 rounded-xl p-4 text-sm hover:bg-zinc-50/80 dark:hover:bg-zinc-800/60 hover:border-zinc-300 dark:hover:border-zinc-600 transition-all duration-200 flex flex-col gap-1 hover:shadow-sm"
                 >
                   <span className="font-medium">{suggestedAction.title}</span>
                   <span className="text-zinc-500 dark:text-zinc-400">
@@ -219,7 +229,7 @@ export function MultimodalInput({
         placeholder="Send a message..."
         value={input}
         onChange={handleInput}
-        className="min-h-[24px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none"
+        className="min-h-[24px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600"
         rows={3}
         onKeyDown={(event) => {
           if (event.key === "Enter" && !event.shiftKey) {

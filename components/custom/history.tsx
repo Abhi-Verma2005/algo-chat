@@ -129,7 +129,7 @@ export const History = ({ user }: { user: User | undefined }) => {
                 className="font-normal text-sm flex flex-row justify-between text-white"
                 asChild
               >
-                <Link href="/">
+                <Link href="/chat">
                   <div>Start a new chat</div>
                   <PencilEditIcon size={14} />
                 </Link>

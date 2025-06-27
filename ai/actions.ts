@@ -12,6 +12,7 @@ import {
   _QuestionToQuestionTagRelations,
   questionToQuestionTag,
   Bookmark,
+  _QuestionToQuestionTag,
 } from "@/lib/algo-schema";
 import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { isThisWeek, isToday } from "date-fns";
@@ -406,7 +407,8 @@ export async function getUserProgress(
           hardCount: sql<number>`count(distinct case when ${questions.difficulty} = 'HARD' and ${Submission.status} = 'ACCEPTED' then ${questions.id} end)::int`
         })
         .from(QuestionTag)
-        .innerJoin(questions, eq(questions, QuestionTag.id))
+        .innerJoin(_QuestionToQuestionTag, eq(_QuestionToQuestionTag.B, QuestionTag.id)) 
+        .innerJoin(questions, eq(_QuestionToQuestionTag.A, questions.id))     
         .leftJoin(Submission, and(
           eq(Submission.questionId, questions.id),
           eq(Submission.userId, userId),

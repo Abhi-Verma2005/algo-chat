@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
-
-import { LogoGoogle, MessageIcon, VercelIcon } from "./icons";
+import { Brain, Code, Zap } from "lucide-react";
 
 export const Overview = () => {
   return (
@@ -15,33 +14,31 @@ export const Overview = () => {
     >
       <div className="border-none bg-muted/50 rounded-2xl p-6 flex flex-col gap-4 text-zinc-500 text-sm dark:text-zinc-400 dark:border-zinc-700">
         <p className="flex flex-row justify-center gap-4 items-center text-zinc-900 dark:text-zinc-50">
-          <VercelIcon />
+          <Brain className="w-5 h-5" />
           <span>+</span>
-          <MessageIcon />
+          <Code className="w-5 h-5" />
+          <span>=</span>
+          <Zap className="w-5 h-5" />
         </p>
         <p>
-          This is an open source Chatbot template powered by the Google Gemini
-          model built with Next.js and the AI SDK by Vercel. It uses the{" "}
-          <code className="rounded-sm bg-muted-foreground/15 px-1.5 py-0.5">
-            streamText
-          </code>{" "}
-          function in the server and the{" "}
-          <code className="rounded-sm bg-muted-foreground/15 px-1.5 py-0.5">
-            useChat
-          </code>{" "}
-          hook on the client to create a seamless chat experience.
+          This is Spark, your AI-powered DSA learning companion. Get personalized explanations for 
+          Data Structures & Algorithms concepts, instant code reviews, and adaptive learning paths 
+          tailored to your skill level.
         </p>
         <p>
-          {" "}
-          You can learn more about the AI SDK by visiting the{" "}
-          <Link
-            className="text-blue-500 dark:text-blue-400"
-            href="https://sdk.vercel.ai/docs"
-            target="_blank"
-          >
-            Docs
-          </Link>
-          .
+          Whether you're preparing for{" "}
+          <code className="rounded-sm bg-muted-foreground/15 px-1.5 py-0.5">
+            technical interviews
+          </code>{" "}
+          or just want to understand{" "}
+          <code className="rounded-sm bg-muted-foreground/15 px-1.5 py-0.5">
+            complex algorithms
+          </code>
+          , Spark provides 24/7 interactive tutoring that adapts to your learning style.
+        </p>
+        <p>
+          Ready to master DSA? Start by asking about any concept - from basic arrays to 
+          advanced dynamic programming. No question is too simple or complex for your AI tutor!
         </p>
       </div>
     </motion.div>
