@@ -1,6 +1,5 @@
 import { convertToCoreMessages, Message, streamText } from "ai";
 import { z } from "zod";
-
 import { geminiProModel } from "@/ai";
 import {
   getUserProgress,
@@ -20,7 +19,6 @@ export async function POST(request: Request) {
     await request.json();
 
   const session = await auth();
-
   
   if (!session || !session.user) {
     return new Response("Unauthorized", { status: 401 });
@@ -90,24 +88,24 @@ Remember: Your goal is to guide users to understand concepts and solve problems 
           return progress;
         },
       },
-     getFilteredQuestionsToSolve: {
-        description: "Fetch a curated list of DSA questions by passing SCREAMING_SNAKE_CASE topic name based on selected topics and difficulty levels, along with user-specific metadata like solved/bookmarked status.",
-        parameters: z.object({
-          topics: z.array(z.string()).min(1).describe("List of topic tags to filter questions by"),
-          limit: z.number().min(1).max(100).default(50).describe("Maximum number of questions to fetch (default 50)")
-        }),
-        execute: async ({ topics, limit }) => {
-          const userId = session.user!.id;
-          if(!userId) {
-            return null
+      getFilteredQuestionsToSolve: {
+          description: "Fetch a curated list of DSA questions by passing SCREAMING_SNAKE_CASE topic name based on selected topics and difficulty levels, along with user-specific metadata like solved/bookmarked status.",
+          parameters: z.object({
+            topics: z.array(z.string()).min(1).describe("List of topic tags to filter questions by"),
+            limit: z.number().min(1).max(100).default(50).describe("Maximum number of questions to fetch (default 50)")
+          }),
+          execute: async ({ topics, limit }) => {
+            const userId = session.user!.id;
+            if(!userId) {
+              return null
+            }
+
+            const response = await getFilteredQuestions({ topics, userId, limit });
+
+            console.log(response)
+            
+            return response
           }
-
-          const response = await getFilteredQuestions({ topics, userId, limit });
-
-          console.log(response)
-          
-          return response
-        }
       }
 
       // getTopicSpecificProgress: {
@@ -134,7 +132,6 @@ Remember: Your goal is to guide users to understand concepts and solve problems 
       // },
 
       
-
       // =============================================
       // PROBLEM RECOMMENDATION & DISCOVERY TOOLS
       // =============================================

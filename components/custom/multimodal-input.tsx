@@ -13,7 +13,7 @@ import React, {
 } from "react";
 import { toast } from "sonner";
 
-import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
+import { ArrowUpIcon, StopIcon } from "./icons";
 import { PreviewAttachment } from "./preview-attachment";
 import useWindowSize from "./use-window-size";
 import { Button } from "../ui/button";
@@ -82,8 +82,26 @@ export function MultimodalInput({
 
   const adjustHeight = () => {
     if (textareaRef.current) {
+      // Reset height to auto first to get the actual scrollHeight
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight + 0}px`;
+      
+      // Calculate the new height based on content
+      const scrollHeight = textareaRef.current.scrollHeight;
+      
+      // Set a maximum height (you can adjust this value as needed)
+      const maxHeight = 200; // pixels
+      const minHeight = 72; // 3 rows * 24px (approximate line height)
+      
+      // Apply the calculated height with constraints
+      const newHeight = Math.min(Math.max(scrollHeight, minHeight), maxHeight);
+      textareaRef.current.style.height = `${newHeight}px`;
+      
+      // Enable scrolling if content exceeds max height
+      if (scrollHeight > maxHeight) {
+        textareaRef.current.style.overflowY = "auto";
+      } else {
+        textareaRef.current.style.overflowY = "hidden";
+      }
     }
   };
 
@@ -210,7 +228,7 @@ export function MultimodalInput({
             <PreviewAttachment key={attachment.url} attachment={attachment} />
           ))}
 
-          {uploadQueue.map((filename) => (
+          {/* {uploadQueue.map((filename) => (
             <PreviewAttachment
               key={filename}
               attachment={{
@@ -220,7 +238,7 @@ export function MultimodalInput({
               }}
               isUploading={true}
             />
-          ))}
+          ))} */}
         </div>
       )}
 
@@ -229,7 +247,7 @@ export function MultimodalInput({
         placeholder="Send a message..."
         value={input}
         onChange={handleInput}
-        className="min-h-[24px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600"
+        className="min-h-[72px] max-h-[200px] overflow-hidden resize-none rounded-lg text-base bg-muted border-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-600"
         rows={3}
         onKeyDown={(event) => {
           if (event.key === "Enter" && !event.shiftKey) {
@@ -267,7 +285,7 @@ export function MultimodalInput({
         </Button>
       )}
 
-      <Button
+      {/* <Button
         className="rounded-full p-1.5 h-fit absolute bottom-2 right-10 m-0.5 dark:border-zinc-700"
         onClick={(event) => {
           event.preventDefault();
@@ -277,7 +295,8 @@ export function MultimodalInput({
         disabled={isLoading}
       >
         <PaperclipIcon size={14} />
-      </Button>
+      </Button> */}
+      
     </div>
   );
 }
