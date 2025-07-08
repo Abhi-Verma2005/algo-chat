@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Brain, Code, Users, Zap, CheckCircle, ArrowRight, BookOpen, Target, MessageCircle, Star, Play, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 
-const SparkLanding = () => {
+const OdinLanding = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [activeFeature, setActiveFeature] = useState(0);
 
@@ -42,13 +42,13 @@ const SparkLanding = () => {
     {
       name: "Sarah Chen",
       role: "CS Student",
-      content: "Finally understood dynamic programming! Spark explains it so clearly.",
+      content: "Finally understood dynamic programming! Odin explains it so clearly.",
       rating: 5
     },
     {
       name: "Alex Rodriguez",
       role: "Software Engineer",
-      content: "Cracked my FAANG interview thanks to Spark&apos;s personalized practice.",
+      content: "Cracked my FAANG interview thanks to Odin&apos;s personalized practice.",
       rating: 5
     },
     {
@@ -81,7 +81,7 @@ const SparkLanding = () => {
               Master DSA with
               <br />
               <span className="relative">
-                Your AI Tutor Spark
+                Your AI Tutor Odin
                 <div className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-full"></div>
               </span>
             </h1>
@@ -202,7 +202,7 @@ const SparkLanding = () => {
                     <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
                     <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                   </div>
-                  <div className="text-zinc-400 text-xs">Chat with Spark</div>
+                  <div className="text-zinc-400 text-xs">Chat with Odin</div>
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-start space-x-3">
@@ -273,7 +273,7 @@ const SparkLanding = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-zinc-900 dark:text-zinc-100">What Students Say</h2>
-            <p className="text-lg text-zinc-600 dark:text-zinc-400">Join thousands of students who&apos;ve mastered DSA with Spark</p>
+            <p className="text-lg text-zinc-600 dark:text-zinc-400">Join thousands of students who&apos;ve mastered DSA with Odin</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -336,7 +336,7 @@ const SparkLanding = () => {
               <div className="w-8 h-8 bg-zinc-900 dark:bg-zinc-100 rounded-lg flex items-center justify-center">
                 <Zap className="w-5 h-5 text-white dark:text-black" />
               </div>
-              <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Spark</span>
+              <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Odin</span>
             </div>
             <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-4">Your AI-powered DSA learning companion</p>
           </div>
@@ -352,4 +352,4 @@ const SparkLanding = () => {
   );
 };
 
-export default SparkLanding;
+export default OdinLanding;

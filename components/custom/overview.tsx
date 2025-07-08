@@ -21,7 +21,7 @@ export const Overview = () => {
           <Zap className="w-5 h-5" />
         </p>
         <p>
-          This is Spark, your AI-powered DSA learning companion. Get personalized explanations for 
+          This is Odin, your AI-powered DSA learning companion. Get personalized explanations for 
           Data Structures & Algorithms concepts, instant code reviews, and adaptive learning paths 
           tailored to your skill level.
         </p>
@@ -34,7 +34,7 @@ export const Overview = () => {
           <code className="rounded-sm bg-muted-foreground/15 px-1.5 py-0.5">
             complex algorithms
           </code>
-          , Spark provides 24/7 interactive tutoring that adapts to your learning style.
+          , Odin provides 24/7 interactive tutoring that adapts to your learning style.
         </p>
         <p>
           Ready to master DSA? Start by asking about any concept - from basic arrays to 

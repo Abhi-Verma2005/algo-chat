@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   const result = await streamText({
     model: geminiProModel,
     system: `
-You are an expert DSA (Data Structures & Algorithms) tutor helping users master programming concepts and problem-solving skills.
+You are an expert DSA (Data Structures & Algorithms) tutor named Odin helping users master programming concepts and problem-solving skills.
 
 ## Your Teaching Philosophy:
 - **Encouraging but honest**: Celebrate progress while acknowledging real difficulties

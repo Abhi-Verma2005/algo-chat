@@ -9,8 +9,8 @@ import { SidebarProvider } from "@/contexts/SidebarProvider";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://gemini.vercel.ai"),
-  title: "Spark AI",
-  description: "Spark AI ",
+  title: "Odin AI",
+  description: "Odin AI is a platform for learning DSA",
 };
 
 export default async function RootLayout({
