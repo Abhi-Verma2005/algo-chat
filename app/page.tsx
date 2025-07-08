@@ -96,7 +96,7 @@ const SparkLanding = () => {
                   <button className="group bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black px-8 py-3 rounded-xl text-lg font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all transform hover:scale-105 shadow-xl flex items-center space-x-3">
                     <MessageCircle className="w-5 h-5" />
                       <span>Start Learning</span>
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" />
                   </button>
                 </Link>
               <Link href={"https://algo-journey-3siz.vercel.app/"} target='_blank' rel="noopener noreferrer">
@@ -110,15 +110,15 @@ const SparkLanding = () => {
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl mx-auto">
               <div className="text-center group">
-                <div className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-1 group-hover:scale-110 transition-transform">10K+</div>
+                <div className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-1 group-hover:scale-110 transition">10K+</div>
                 <div className="text-zinc-500 dark:text-zinc-400 font-medium">Students Helped</div>
               </div>
               <div className="text-center group">
-                <div className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-1 group-hover:scale-110 transition-transform">500+</div>
+                <div className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-1 group-hover:scale-110 transition">500+</div>
                 <div className="text-zinc-500 dark:text-zinc-400 font-medium">DSA Problems</div>
               </div>
               <div className="text-center group">
-                <div className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-1 group-hover:scale-110 transition-transform">24/7</div>
+                <div className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-1 group-hover:scale-110 transition">24/7</div>
                 <div className="text-zinc-500 dark:text-zinc-400 font-medium">AI Availability</div>
               </div>
             </div>
@@ -167,7 +167,7 @@ const SparkLanding = () => {
                 <h3 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-zinc-100">Interactive Learning Experience</h3>
                 <div className="space-y-4">
                   <div className="flex items-start space-x-3">
-                    <div className="w-5 h-5 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                    <div className="w-5 h-5 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mt-0.5 shrink-0">
                       <CheckCircle className="w-3 h-3 text-green-600 dark:text-green-400" />
                     </div>
                     <div className="text-sm">
@@ -176,7 +176,7 @@ const SparkLanding = () => {
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
-                    <div className="w-5 h-5 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                    <div className="w-5 h-5 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mt-0.5 shrink-0">
                       <CheckCircle className="w-3 h-3 text-green-600 dark:text-green-400" />
                     </div>
                     <div className="text-sm">
@@ -185,7 +185,7 @@ const SparkLanding = () => {
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
-                    <div className="w-5 h-5 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                    <div className="w-5 h-5 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mt-0.5 shrink-0">
                       <CheckCircle className="w-3 h-3 text-green-600 dark:text-green-400" />
                     </div>
                     <div className="text-sm">
@@ -206,13 +206,13 @@ const SparkLanding = () => {
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-start space-x-3">
-                    <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center shrink-0">
                       <span className="text-white text-xs font-bold">U</span>
                     </div>
                     <div className="text-zinc-300 text-sm">I don't understand binary search...</div>
                   </div>
                   <div className="flex items-start space-x-3">
-                    <div className="w-6 h-6 bg-zinc-700 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-6 h-6 bg-zinc-700 rounded-full flex items-center justify-center shrink-0">
                       <Zap className="w-3 h-3 text-zinc-300" />
                     </div>
                     <div className="text-zinc-300 text-sm">
@@ -285,7 +285,7 @@ const SparkLanding = () => {
                   ))}
                 </div>
                 <blockquote className="text-zinc-700 dark:text-zinc-300 mb-4 text-sm italic leading-relaxed">
-                  "{testimonial.content}"
+                  &quot;{testimonial.content}&quot;
                 </blockquote>
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-zinc-200 dark:bg-zinc-700 rounded-full flex items-center justify-center">
@@ -318,7 +318,7 @@ const SparkLanding = () => {
               <button className="group bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black px-10 py-4 rounded-xl text-lg font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all transform hover:scale-105 shadow-lg flex items-center space-x-3">
                 <MessageCircle className="w-5 h-5" />
                 <span>Start Learning Now</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" />
               </button>
               <div className="text-zinc-500 dark:text-zinc-400 text-sm">
                 ✨ Free to start • No credit card required

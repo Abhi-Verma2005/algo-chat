@@ -126,10 +126,10 @@ const QuestionCard = ({ question, onDone, onCheck }: QuestionCardProps) => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             {question.isSolved && (
-              <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+              <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
             )}
             {question.isBookmarked && (
-              <Bookmark className="w-4 h-4 text-blue-500 flex-shrink-0" />
+              <Bookmark className="w-4 h-4 text-blue-500 shrink-0" />
             )}
           </div>
           

@@ -26,7 +26,7 @@ export const Overview = () => {
           tailored to your skill level.
         </p>
         <p>
-          Whether you're preparing for{" "}
+          Whether you&apos;re preparing for{" "}
           <code className="rounded-sm bg-muted-foreground/15 px-1.5 py-0.5">
             technical interviews
           </code>{" "}

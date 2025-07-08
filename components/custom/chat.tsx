@@ -141,7 +141,7 @@ export function Chat({
           className="w-1 bg-border hover:bg-blue-500/50 cursor-col-resize transition-colors relative z-10"
           onMouseDown={handleMouseDown}
         >
-          <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <GripVertical className="w-4 h-4 text-muted-foreground" />
           </div>
         </div>
