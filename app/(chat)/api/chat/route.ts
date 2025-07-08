@@ -9,10 +9,13 @@ import {
 } from "@/ai/actions";
 import { auth } from "@/app/(auth)/auth";
 import {
+  db,
   deleteChatById,
   getChatById,
   saveChat,
 } from "@/db/queries";
+import { codeSubmissions } from "@/db/schema";
+import { and, eq } from "drizzle-orm";
 
 export async function POST(request: Request) {
   const { id, messages }: { id: string; messages: Array<Message> } =
@@ -106,7 +109,73 @@ Remember: Your goal is to guide users to understand concepts and solve problems 
             
             return response
           }
-      }
+      },
+
+      getUserSubmissionForProblem: {
+        description: "Get the user's latest code submission for a specific problem/question",
+        parameters: z.object({
+          questionSlug: z.string().describe("The slug/identifier of the problem (e.g., 'two-sum', 'binary-search')"),
+          includeMetadata: z.boolean().default(true).describe("Include submission metadata like language, timestamp, etc.")
+        }),
+        execute: async ({ questionSlug, includeMetadata }) => {
+          const userId = session.user!.id;
+          if (!userId) {
+            return null;
+          }
+
+          try {
+            // Get the user's submission for this specific problem
+            const [submission] = await db
+              .select({
+                id: codeSubmissions.id,
+                code: codeSubmissions.code,
+                language: codeSubmissions.language,
+                problemTitle: codeSubmissions.problemTitle,
+                submissionStatus: codeSubmissions.submissionStatus,
+                createdAt: codeSubmissions.createdAt,
+                updatedAt: codeSubmissions.updatedAt,
+              })
+              .from(codeSubmissions)
+              .where(
+                and(
+                  eq(codeSubmissions.externalUserId, userId),
+                  eq(codeSubmissions.questionSlug, questionSlug)
+                )
+              )
+              .limit(1);
+
+            if (!submission) {
+              return {
+                found: false,
+                message: `No submission found for problem: ${questionSlug}`
+              };
+            }
+
+            const result: any = {
+              found: true,
+              questionSlug,
+              code: submission.code,
+              language: submission.language,
+              submissionStatus: submission.submissionStatus,
+            };
+
+            if (includeMetadata) {
+              result.problemTitle = submission.problemTitle;
+              result.createdAt = submission.createdAt;
+              result.updatedAt = submission.updatedAt;
+              result.submissionId = submission.id;
+            }
+
+            return result;
+          } catch (error) {
+            console.error('Error fetching user submission:', error);
+            return {
+              found: false,
+              error: 'Failed to fetch submission'
+            };
+          }
+        },
+      },
 
       // getTopicSpecificProgress: {
       //   description: "Get detailed progress for a specific DSA topic (arrays, linked lists, trees, graphs, etc.)",

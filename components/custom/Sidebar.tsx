@@ -1,4 +1,4 @@
-// components/custom/sidebar.tsx (enhanced version)
+// components/custom/sidebar.tsx (updated for cohesive layout)
 "use client";
 
 import { useSidebar } from "@/contexts/SidebarProvider";
@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 
 export function Sidebar() {
-  const { isOpen, content, closeSidebar } = useSidebar();
+  const { isOpen, content, sidebarWidth, closeSidebar } = useSidebar();
 
   return (
     <>
@@ -27,7 +27,8 @@ export function Sidebar() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="fixed right-0 top-0 h-full w-full md:w-[30%] bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 shadow-lg z-50 flex flex-col"
+            className="fixed right-0 top-0 h-full bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 shadow-lg z-50 flex flex-col"
+            style={{ width: `${sidebarWidth}px` }}
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}

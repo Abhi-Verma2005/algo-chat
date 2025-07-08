@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronUp 
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 // Sample data structure
 const SAMPLE_DATA = {
@@ -17,48 +18,48 @@ const SAMPLE_DATA = {
       id: "1",
       title: "Two Sum",
       slug: "two-sum",
-      difficulty: "EASY",
+      difficulty: "EASY" as const, // Add 'as const' to make it a literal type
       points: 4,
       leetcodeUrl: "https://leetcode.com/problems/two-sum/",
       isSolved: true,
       isBookmarked: false,
-      tags: ["Array", "Hash Table"]
+      questionTags: [{ name: "Array" }, { name: "Hash Table" }] // Changed from tags to questionTags
     },
     {
       id: "2", 
       title: "Add Two Numbers",
       slug: "add-two-numbers",
-      difficulty: "MEDIUM",
+      difficulty: "MEDIUM" as const,
       points: 6,
       leetcodeUrl: "https://leetcode.com/problems/add-two-numbers/",
       isSolved: false,
       isBookmarked: true,
-      tags: ["Linked List", "Math"]
+      questionTags: [{ name: "Linked List" }, { name: "Math" }] // Changed from tags to questionTags
     },
     {
       id: "3",
       title: "Longest Substring Without Repeating Characters",
       slug: "longest-substring-without-repeating-characters", 
-      difficulty: "MEDIUM",
+      difficulty: "MEDIUM" as const,
       points: 6,
       leetcodeUrl: "https://leetcode.com/problems/longest-substring-without-repeating-characters/",
       isSolved: false,
       isBookmarked: false,
-      tags: ["Hash Table", "String", "Sliding Window"]
+      questionTags: [{ name: "Hash Table" }, { name: "String" }, { name: "Sliding Window" }] // Changed from tags to questionTags
     },
     {
       id: "4",
       title: "Median of Two Sorted Arrays",
       slug: "median-of-two-sorted-arrays",
-      difficulty: "HARD", 
+      difficulty: "HARD" as const, 
       points: 8,
       leetcodeUrl: "https://leetcode.com/problems/median-of-two-sorted-arrays/",
       isSolved: false,
       isBookmarked: false,
-      tags: ["Array", "Binary Search", "Divide and Conquer"]
+      questionTags: [{ name: "Array" }, { name: "Binary Search" }, { name: "Divide and Conquer" }] // Changed from tags to questionTags
     }
   ],
-  userPoints: 150,
+  individualPoints: 150,
   totalCount: 25,
   filters: {
     topics: ["Array", "Hash Table"],
@@ -110,7 +111,13 @@ const getDifficultyIcon = (difficulty: string) => {
   }
 };
 
-const QuestionCard = ({ question }: { question: Question }) => {
+interface QuestionCardProps {
+  question: Question;
+  onDone?: (question: Question) => void;
+  onCheck?: (question: Question) => void;
+}
+
+const QuestionCard = ({ question, onDone, onCheck }: QuestionCardProps) => {
   const [showTags, setShowTags] = useState(false);
   
   return (
@@ -137,6 +144,26 @@ const QuestionCard = ({ question }: { question: Question }) => {
             <span className="text-xs font-bold text-green-400">
               +{question.points} pts
             </span>
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 mb-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onDone?.(question)}
+              className="text-xs h-7 px-2"
+            >
+              Done
+            </Button>
+            <Button
+              size="sm"
+              variant="default"
+              onClick={() => onCheck?.(question)}
+              className="text-xs h-7 px-2"
+            >
+              Check
+            </Button>
           </div>
           
           <div className="flex items-center justify-between">
@@ -176,8 +203,19 @@ const QuestionCard = ({ question }: { question: Question }) => {
   );
 };
 
-// @ts-expect-error: no need here
-const CompactQuestionsViewer = ({ data = SAMPLE_DATA }: { data?: QuestionsData }) => {
+// Update the main component to accept callbacks
+interface CompactQuestionsViewerProps {
+  data?: QuestionsData;
+  onDone?: (question: Question) => void;
+  onCheck?: (question: Question) => void;
+}
+
+
+const CompactQuestionsViewer = ({ 
+  data = SAMPLE_DATA, 
+  onDone, 
+  onCheck 
+}: CompactQuestionsViewerProps) => {
   const [showAll, setShowAll] = useState(false);
   const displayQuestions = showAll ? data.questionsWithSolvedStatus : data.questionsWithSolvedStatus.slice(0, 3);
   
@@ -223,7 +261,12 @@ const CompactQuestionsViewer = ({ data = SAMPLE_DATA }: { data?: QuestionsData }
       {/* Questions */}
       <div className="space-y-3">
         {displayQuestions.map((question) => (
-          <QuestionCard key={question.id} question={question} />
+          <QuestionCard 
+            key={question.id} 
+            question={question} 
+            onDone={onDone}
+            onCheck={onCheck}
+          />
         ))}
       </div>
 

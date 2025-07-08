@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import {db} from "@/db/queries"
 import { codeSubmissions } from '@/db/schema';
+import { eq, and } from 'drizzle-orm';
 
 interface SubmitRequest {
   slug: string;
@@ -132,28 +133,68 @@ export async function POST(request: NextRequest): Promise<NextResponse<SubmitRes
       });
     }
 
-    // Insert code submission into database
-    const [submission] = await db
-      .insert(codeSubmissions)
-      .values({
-        externalUserId,
-        questionSlug: slug,
-        code: code.trim(),
-        language: language.toLowerCase(),
-        problemTitle: problemTitle || null,
-        submissionStatus: 'accepted', // Since extension only triggers on successful submissions
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .returning({ id: codeSubmissions.id });
+    // Check for existing submission
+    const existingSubmission = await db
+      .select()
+      .from(codeSubmissions)
+      .where(
+        and(
+          eq(codeSubmissions.externalUserId, externalUserId),
+          eq(codeSubmissions.questionSlug, slug)
+        )
+      )
+      .limit(1);
 
-    console.log(`Code submission saved for user ${externalUserId}, problem ${slug}`);
+    let submission;
+    let isUpdate = false;
+
+    if (existingSubmission.length > 0) {
+      // Update existing submission
+      const [updatedSubmission] = await db
+        .update(codeSubmissions)
+        .set({
+          code: code.trim(),
+          language: language.toLowerCase(),
+          problemTitle: problemTitle || null,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(codeSubmissions.externalUserId, externalUserId),
+            eq(codeSubmissions.questionSlug, slug)
+          )
+        )
+        .returning({ id: codeSubmissions.id });
+
+      submission = updatedSubmission;
+      isUpdate = true;
+      console.log(`Code submission updated for user ${externalUserId}, problem ${slug}`);
+    } else {
+      // Create new submission
+      const [newSubmission] = await db
+        .insert(codeSubmissions)
+        .values({
+          externalUserId,
+          questionSlug: slug,
+          code: code.trim(),
+          language: language.toLowerCase(),
+          problemTitle: problemTitle || null,
+          submissionStatus: 'accepted',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning({ id: codeSubmissions.id });
+
+      submission = newSubmission;
+      console.log(`Code submission created for user ${externalUserId}, problem ${slug}`);
+    }
 
     // Return success response
     return NextResponse.json({
       success: true,
-      message: 'Code submission saved successfully',
-      submissionId: submission.id
+      message: isUpdate ? 'Code submission updated successfully' : 'Code submission saved successfully',
+      submissionId: submission.id,
+      isUpdate
     }, { 
       status: 200,
       headers: {

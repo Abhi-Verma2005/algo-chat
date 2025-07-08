@@ -12,6 +12,7 @@ import { PreviewAttachment } from "./preview-attachment";
 import DSAProgressDashboard from "../dsa/Progress";
 import CompactQuestionsViewer from "../dsa/Questions";
 import { useSidebar } from "@/contexts/SidebarProvider";
+import UserSubmission from "../dsa/UserSubmission";
 
 export const Message = ({
   chatId,
@@ -19,14 +20,34 @@ export const Message = ({
   content,
   toolInvocations,
   attachments,
+  append,
 }: {
   chatId: string;
   role: string;
   content: string | ReactNode;
   toolInvocations: Array<ToolInvocation> | undefined;
   attachments?: Array<Attachment>;
+  append?: (message: any) => void;
 }) => {
   const { setSidebarContent } = useSidebar();
+
+  // Handle Done button click
+  const handleDone = (question: any) => {
+    const message = `I'm done with the question "${question.title}" (${question.slug}). Please check my submission and provide feedback.`;
+    append?.({
+      role: 'user',
+      content: message,
+    });
+  };
+
+  // Handle Check button click
+  const handleCheck = (question: any) => {
+    const message = `Please examine my submission for "${question.title}" (${question.slug}) and provide detailed feedback on my solution.`;
+    append?.({
+      role: 'user',
+      content: message,
+    });
+  };
 
   // Function to get component and show in sidebar
   const showInSidebar = (toolName: string, result: any) => {
@@ -34,10 +55,19 @@ export const Message = ({
 
     switch (toolName) {
       case "getFilteredQuestionsToSolve":
-        component = <CompactQuestionsViewer data={result} />;
+        component = (
+          <CompactQuestionsViewer 
+            data={result} 
+            onDone={handleDone}
+            onCheck={handleCheck}
+          />
+        );
         break;
       case "getUserProgressOverview":
         component = <DSAProgressDashboard data={result} />;
+        break;
+      case "getUserSubmissionForProblem":
+        component = <UserSubmission data={result} />;
         break;
       default:
         component = <div>{JSON.stringify(result, null, 2)}</div>;
