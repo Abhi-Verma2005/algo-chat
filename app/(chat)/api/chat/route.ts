@@ -95,15 +95,16 @@ Remember: Your goal is to guide users to understand concepts and solve problems 
           description: "Fetch a curated list of DSA questions by passing SCREAMING_SNAKE_CASE topic name based on selected topics and difficulty levels, along with user-specific metadata like solved/bookmarked status.",
           parameters: z.object({
             topics: z.array(z.string()).min(1).describe("List of topic tags to filter questions by"),
-            limit: z.number().min(1).max(100).default(50).describe("Maximum number of questions to fetch (default 50)")
+            limit: z.number().min(1).max(100).default(50).describe("Maximum number of questions to fetch (default 50)"),
+            unsolvedOnly: z.boolean().optional().describe("If true, only return unsolved questions for the user")
           }),
-          execute: async ({ topics, limit }) => {
+          execute: async ({ topics, limit, unsolvedOnly }) => {
             const userId = session.user!.id;
             if(!userId) {
               return null
             }
 
-            const response = await getFilteredQuestions({ topics, userId, limit });
+            const response = await getFilteredQuestions({ topics, userId, limit, unsolvedOnly });
 
             console.log(response)
             

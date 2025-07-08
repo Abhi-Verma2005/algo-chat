@@ -164,6 +164,23 @@ const QuestionCard = ({ question, onDone, onCheck }: QuestionCardProps) => {
             >
               Check
             </Button>
+            <a
+              href={question.leetcodeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button
+                size="sm"
+                variant="default"
+                className="text-xs h-7 px-2 flex items-center gap-1"
+                asChild
+              >
+                <span>
+                  Solve
+                  <ExternalLink className="w-3 h-3 inline ml-1" />
+                </span>
+              </Button>
+            </a>
           </div>
           
           <div className="flex items-center justify-between">
@@ -175,14 +192,6 @@ const QuestionCard = ({ question, onDone, onCheck }: QuestionCardProps) => {
               {showTags ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             </button>
             
-            <a
-              href={question.leetcodeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:text-primary/80 transition-colors"
-            >
-              <ExternalLink className="w-4 h-4" />
-            </a>
           </div>
           
           {showTags && (

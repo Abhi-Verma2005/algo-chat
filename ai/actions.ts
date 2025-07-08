@@ -62,6 +62,7 @@ interface FilterQuestionsOptions {
   topics: string[];
   userId: string;
   limit?: number;
+  unsolvedOnly?: boolean;
 }
 
 interface FilterQuestionsResult {
@@ -496,7 +497,7 @@ export async function getFilteredQuestions(
   options: FilterQuestionsOptions
 ): Promise<FilterQuestionsResult> {
   try {
-    const { topics, userId, limit = 50 } = options;
+    const { topics, userId, limit = 50, unsolvedOnly = false } = options;
 
     const difficulties = ["BEGINNER", "EASY", "MEDIUM", "HARD", "VERYHARD"]
 
@@ -640,17 +641,39 @@ export async function getFilteredQuestions(
         )
       );
 
+    // Fetch all submissions for these questions (for unsolvedOnly logic)
+    let allSubmittedQuestionIds: Set<string> = new Set();
+    if (unsolvedOnly) {
+      const allSubmissions = await externalDb
+        .select({
+          questionId: Submission.questionId
+        })
+        .from(Submission)
+        .where(
+          and(
+            eq(Submission.userId, userId),
+            inArray(Submission.questionId, questionIds)
+          )
+        );
+      allSubmittedQuestionIds = new Set(allSubmissions.map(sub => sub.questionId));
+    }
+
     // 6. Create sets for quick lookup
     const solvedQuestionIds = new Set(acceptedSubmissions.map(sub => sub.questionId));
     const bookmarkedQuestionIds = new Set(bookmarks.map(bookmark => bookmark.questionId));
 
     // 7. Add solved and bookmarked status, and set index
-    const questionsWithSolvedStatus = sortedQuestions.map((question, index) => ({
+    let questionsWithSolvedStatus = sortedQuestions.map((question, index) => ({
       ...question,
       index: index,
       isSolved: solvedQuestionIds.has(question.id),
       isBookmarked: bookmarkedQuestionIds.has(question.id)
     }));
+
+    // If unsolvedOnly is true, filter out any question with any submission
+    if (unsolvedOnly) {
+      questionsWithSolvedStatus = questionsWithSolvedStatus.filter(q => !allSubmittedQuestionIds.has(q.id));
+    }
 
     console.log("✅ Filtered questions successfully:", {
       totalQuestions: questionsWithSolvedStatus.length,
