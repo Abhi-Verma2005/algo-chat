@@ -11,7 +11,9 @@ import { externalDb } from "@/lib/algo-db";
 
 // Your current database for chat and reservation data
 let client = postgres(`${process.env.POSTGRES_URL!}?sslmode=require`);
-let db = drizzle(client);
+export const db = drizzle(client);
+
+
 
 
 // ============ EXTERNAL USER AUTHENTICATION FUNCTIONS ============
