@@ -2,6 +2,7 @@
 
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import 'highlight.js/styles/github-dark-dimmed.css';
 
 export function ThemeToggle() {
   const { setTheme, theme } = useTheme();

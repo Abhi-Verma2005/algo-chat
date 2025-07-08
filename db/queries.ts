@@ -53,14 +53,11 @@ export async function getExternalUser(userEmail: string) {
         password: users.password,
         username: users.username,
         email: users.email,
-        id: users.id,
-        apikey: UserApiKey.key
+        id: users.id
       })
       .from(users)
-      .innerJoin(UserApiKey, eq(users.id, UserApiKey.userId))
       .where(eq(users.email, userEmail));
 
-    console.log("Haliluya", usersFound.length > 0 ? usersFound[0] : null)
 
     return usersFound.length > 0 ? usersFound[0] : null;
   } catch (error) {
