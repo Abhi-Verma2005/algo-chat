@@ -48,13 +48,13 @@ const SparkLanding = () => {
     {
       name: "Alex Rodriguez",
       role: "Software Engineer",
-      content: "Cracked my FAANG interview thanks to Spark's personalized practice.",
+      content: "Cracked my FAANG interview thanks to Spark&apos;s personalized practice.",
       rating: 5
     },
     {
       name: "Priya Patel",
       role: "Bootcamp Graduate",
-      content: "The best DSA tutor I've ever had. Available 24/7 and never judges!",
+      content: "The best DSA tutor I&apos;ve ever had. Available 24/7 and never judges!",
       rating: 5
     }
   ];
@@ -209,14 +209,14 @@ const SparkLanding = () => {
                     <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center shrink-0">
                       <span className="text-white text-xs font-bold">U</span>
                     </div>
-                    <div className="text-zinc-300 text-sm">I don't understand binary search...</div>
+                    <div className="text-zinc-300 text-sm">I don&apos;t understand binary search...</div>
                   </div>
                   <div className="flex items-start space-x-3">
                     <div className="w-6 h-6 bg-zinc-700 rounded-full flex items-center justify-center shrink-0">
                       <Zap className="w-3 h-3 text-zinc-300" />
                     </div>
                     <div className="text-zinc-300 text-sm">
-                      Let's break it down! Think of binary search like finding a word in a dictionary. You don't start from page 1, right? You open to the middle and...
+                      Let&apos;s break it down! Think of binary search like finding a word in a dictionary. You don&apos;t start from page 1, right? You open to the middle and...
                     </div>
                   </div>
                 </div>
@@ -273,7 +273,7 @@ const SparkLanding = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-zinc-900 dark:text-zinc-100">What Students Say</h2>
-            <p className="text-lg text-zinc-600 dark:text-zinc-400">Join thousands of students who've mastered DSA with Spark</p>
+            <p className="text-lg text-zinc-600 dark:text-zinc-400">Join thousands of students who&apos;ve mastered DSA with Spark</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
