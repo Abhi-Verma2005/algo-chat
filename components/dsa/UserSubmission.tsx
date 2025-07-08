@@ -130,7 +130,7 @@ const UserSubmission = ({ data }: UserSubmissionProps) => {
             {data.message || 'No submission found for this problem.'}
           </p>
           <p className="text-sm text-muted-foreground">
-            Make sure you've submitted your solution on LeetCode with the extension enabled.
+            Make sure you&apos;ve submitted your solution on LeetCode with the extension enabled.
           </p>
         </div>
       </div>
