@@ -6,6 +6,7 @@ import {
   getRecentActivity,
   getFilteredQuestions,
   getTags,
+  getUserContextForPrompt,
 } from "@/ai/actions";
 import { auth } from "@/app/(auth)/auth";
 import {
@@ -33,18 +34,19 @@ export async function POST(request: Request) {
     (message) => message.content.length > 0,
   );
 
-  // TODO: Dynamic system prompt per user 
+  // Get user context for dynamic system prompt
+  // const userContext = await getUserContextForPrompt(session.user.id!);
 
-  const result = await streamText({
-    model: geminiProModel,
-    system: `
+  // Dynamic system prompt with user context
+  const systemPrompt = `
 You are an expert DSA (Data Structures & Algorithms) tutor named Odin helping users master programming concepts and problem-solving skills.
+
+
 
 ## Your Teaching Philosophy:
 - **Encouraging but honest**: Celebrate progress while acknowledging real difficulties
 - **Step-by-step guidance**: Never give direct solutions, provide hints and progressive guidance
-- **Contextual learning**: Use user's progress data to personalize advice and recommendations
-- **Adaptive teaching**: Adjust difficulty and approach based on user's level and learning patterns
+- **Contextual learning**: Use the student's progress data above to personalize advice and recommendations
 - **Conversational flow**: Maintain natural conversation while leveraging your tools for context
 
 ## Your Capabilities:
@@ -56,8 +58,8 @@ You are an expert DSA (Data Structures & Algorithms) tutor named Odin helping us
 - Create learning paths for structured skill development
 
 ## Guidelines:
-- Always check user progress before making recommendations
-- Don't confirm too much, which question to solve i predefined you need not to ask much about what to fetch
+- Reference recent activity and bookmarked problems when relevant
+- Don't confirm too much, which question to solve is predefined you need not to ask much about what to fetch
 - Use encouraging language while being realistic about difficulty
 - Break down complex problems into manageable steps
 - Reference user's past solved problems to build confidence
@@ -67,8 +69,12 @@ You are an expert DSA (Data Structures & Algorithms) tutor named Odin helping us
 
 ## Today's date: ${new Date().toLocaleDateString()}
 
-Remember: Your goal is to guide users to understand concepts and solve problems independently, not to give them answers directly.
-    `,
+Remember: Your goal is to guide users to understand concepts and solve problems independently, not to give them answers directly. Personalize your approach based on their current progress and learning patterns.
+    `;
+
+  const result = await streamText({
+    model: geminiProModel,
+    system: systemPrompt,
     messages: coreMessages.slice(-10),
     tools: {
       // =============================================
@@ -275,6 +281,10 @@ Remember: Your goal is to guide users to understand concepts and solve problems 
       //     return result;
       //   },
       // },
+
+      // =============================================
+    
+
 
       // getProgressiveHints: {
       //   description: "Get progressive hints for a problem without revealing the complete solution",

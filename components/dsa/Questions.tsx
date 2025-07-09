@@ -10,6 +10,7 @@ import {
   ChevronUp 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+// import { Tooltip } from '@/components/ui/tooltip'; // Removed unused import
 
 // Sample data structure
 const SAMPLE_DATA = {
@@ -119,40 +120,46 @@ interface QuestionCardProps {
 
 const QuestionCard = ({ question, onDone, onCheck }: QuestionCardProps) => {
   const [showTags, setShowTags] = useState(false);
-  
+  const [bookmarked, setBookmarked] = useState(question.isBookmarked);
+  const [showHint, setShowHint] = useState(false);
+
   return (
-    <div className="bg-card border border-border rounded-lg p-3 hover:bg-accent/50 transition-all duration-200">
+    <div className="bg-[#181A20]/90 backdrop-blur-md border border-[#23272e] rounded-2xl p-5 shadow-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-2xl">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             {question.isSolved && (
-              <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+              <CheckCircle className="size-4 text-green-400" />
             )}
-            {question.isBookmarked && (
-              <Bookmark className="w-4 h-4 text-blue-500 shrink-0" />
-            )}
+            <button
+              onClick={() => setBookmarked((b) => !b)}
+              className={`rounded-full p-1 transition-colors ${bookmarked ? 'bg-blue-900/60' : 'bg-transparent'} hover:bg-blue-900/40`}
+              aria-label="Bookmark"
+            >
+              <Bookmark className={`size-4 ${bookmarked ? 'text-blue-400' : 'text-zinc-500'}`} />
+            </button>
           </div>
-          
-          <h4 className="text-sm font-semibold text-foreground leading-tight mb-2 line-clamp-2">
+
+          <h4 className="text-base font-semibold text-white leading-tight mb-2 line-clamp-2">
             {question.title}
           </h4>
-          
-          <div className="flex items-center gap-2 mb-2">
-            <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getDifficultyColor(question.difficulty)}`}>
+
+          <div className="flex items-center gap-2 mb-3">
+            <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getDifficultyColor(question.difficulty)} shadow-sm`}> 
               {getDifficultyIcon(question.difficulty)} {question.difficulty}
             </span>
-            <span className="text-xs font-bold text-green-400">
+            <span className="text-xs font-bold text-green-400 bg-green-900/30 px-2 py-0.5 rounded-full">
               +{question.points} pts
             </span>
           </div>
-          
+
           {/* Action Buttons */}
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
             <Button
               size="sm"
               variant="outline"
               onClick={() => onDone?.(question)}
-              className="text-xs h-7 px-2"
+              className="text-xs h-8 px-3 rounded-full border-fuchsia-700 text-fuchsia-300 bg-fuchsia-900/20 hover:bg-fuchsia-900/40 hover:text-white"
             >
               Done
             </Button>
@@ -160,9 +167,17 @@ const QuestionCard = ({ question, onDone, onCheck }: QuestionCardProps) => {
               size="sm"
               variant="default"
               onClick={() => onCheck?.(question)}
-              className="text-xs h-7 px-2"
+              className="text-xs h-8 px-3 rounded-full border-sky-700 text-sky-300 bg-sky-900/20 hover:bg-sky-900/40 hover:text-white"
             >
               Check
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setShowHint((h) => !h)}
+              className="text-xs h-8 px-3 rounded-full border-indigo-700 text-indigo-300 bg-indigo-900/20 hover:bg-indigo-900/40 hover:text-white"
+            >
+              Hint
             </Button>
             <a
               href={question.leetcodeUrl}
@@ -172,34 +187,41 @@ const QuestionCard = ({ question, onDone, onCheck }: QuestionCardProps) => {
               <Button
                 size="sm"
                 variant="default"
-                className="text-xs h-7 px-2 flex items-center gap-1"
+                className="text-xs h-8 px-3 rounded-full flex items-center gap-1 border-green-700 text-green-300 bg-green-900/20 hover:bg-green-900/40 hover:text-white"
                 asChild
               >
                 <span>
                   Solve
-                  <ExternalLink className="w-3 h-3 inline ml-1" />
+                  <ExternalLink className="size-3 inline ml-1" />
                 </span>
               </Button>
             </a>
           </div>
-          
-          <div className="flex items-center justify-between">
+
+          {/* Quick Hint Tooltip/Box */}
+          {showHint && (
+            <div className="bg-zinc-800 border border-indigo-700 text-indigo-200 rounded-xl p-3 mb-2 animate-fade-in">
+              {/* Replace with actual hint logic or static text */}
+              <span>Try breaking the problem into smaller subproblems and use a hash map for fast lookups!</span>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between mt-2">
             <button
               onClick={() => setShowTags(!showTags)}
-              className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+              className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 transition-colors"
             >
               {question.questionTags ? question.questionTags.length : 0} tags
-              {showTags ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              {showTags ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
             </button>
-            
           </div>
-          
+
           {showTags && (
-            <div className="flex flex-wrap gap-1 mt-2">
+            <div className="flex flex-wrap gap-2 mt-2">
               {question.questionTags.map((tag, index) => (
                 <span
                   key={index}
-                  className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-xs border border-border"
+                  className="px-2 py-1 bg-[#23272e] text-blue-300 rounded-full text-xs border border-blue-800 shadow-sm"
                 >
                   {tag.name}
                 </span>

@@ -916,3 +916,258 @@ function getDateFilter(timeRange: string): Date | null {
     return null;
   }
 }
+
+// Get user context for system prompt templating
+export async function getUserContextForPrompt(userId: string) {
+  try {
+    // Input validation
+    if (!userId?.trim()) {
+      throw new Error("User ID is required");
+    }
+
+    console.log("🔍 Getting user context for prompt templating:", { userId });
+
+    // 1. Get basic user info with LeetCode stats
+    const userInfo = await externalDb
+      .select({
+        username: User.username,
+        leetcodeUsername: User.leetcodeUsername, 
+        enrollmentNum: User.enrollmentNum,
+        section: User.section,
+        individualPoints: User.individualPoints,
+        leetcodeQuestionsSolved: UserConfig.leetcode_questions_solved,
+        codeforcesQuestionsSolved: UserConfig.codeforces_questions_solved,
+        rank: UserConfig.rank,
+        userBrief: UserConfig.user_brief
+      })
+      .from(User)
+      .leftJoin(UserConfig, eq(User.email, UserConfig.userEmail))
+      .where(eq(User.id, userId))
+      .limit(1);
+
+    if (!userInfo || userInfo.length === 0) {
+      throw new Error(`User not found with ID: ${userId}`);
+    }
+
+    const user = userInfo[0];
+
+    // 2. Get recent submission activity (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const recentSubmissions = await externalDb
+      .select({
+        questionId: Submission.questionId,
+        status: Submission.status,
+        score: Submission.score,
+        createdAt: Submission.createdAt,
+        difficulty: questions.difficulty,
+        slug: questions.slug,
+        title: questions.slug, // Using slug as title
+        tagName: QuestionTag.name
+      })
+      .from(Submission)
+      .innerJoin(questions, eq(Submission.questionId, questions.id))
+      .leftJoin(_QuestionToQuestionTag, eq(questions.id, _QuestionToQuestionTag.A))
+      .leftJoin(QuestionTag, eq(_QuestionToQuestionTag.B, QuestionTag.id))
+      .where(
+        and(
+          eq(Submission.userId, userId),
+          gte(Submission.createdAt, thirtyDaysAgo)
+        )
+      )
+      .orderBy(desc(Submission.createdAt))
+      .limit(50);
+
+    // 3. Get current streak
+    const currentStreak = await calculateCurrentStreak(userId);
+
+    // 4. Get tag-wise progress for context
+    const tagProgress = await externalDb
+      .select({
+        tagName: QuestionTag.name,
+        totalProblems: sql<number>`count(distinct ${questions.id})::int`,
+        solvedProblems: sql<number>`count(distinct case when ${Submission.status} = 'ACCEPTED' then ${questions.id} end)::int`,
+        easyCount: sql<number>`count(distinct case when ${questions.difficulty} = 'EASY' and ${Submission.status} = 'ACCEPTED' then ${questions.id} end)::int`,
+        mediumCount: sql<number>`count(distinct case when ${questions.difficulty} = 'MEDIUM' and ${Submission.status} = 'ACCEPTED' then ${questions.id} end)::int`,
+        hardCount: sql<number>`count(distinct case when ${questions.difficulty} = 'HARD' and ${Submission.status} = 'ACCEPTED' then ${questions.id} end)::int`
+      })
+      .from(QuestionTag)
+      .innerJoin(_QuestionToQuestionTag, eq(_QuestionToQuestionTag.B, QuestionTag.id)) 
+      .innerJoin(questions, eq(_QuestionToQuestionTag.A, questions.id))     
+      .leftJoin(Submission, and(
+        eq(Submission.questionId, questions.id),
+        eq(Submission.userId, userId)
+      ))
+      .groupBy(QuestionTag.name)
+      .orderBy(desc(sql`count(distinct case when ${Submission.status} = 'ACCEPTED' then ${questions.id} end)`))
+      .limit(10);
+
+    // 5. Get bookmarked questions for context
+    const bookmarkedQuestions = await externalDb
+      .select({
+        questionId: Bookmark.questionId,
+        slug: questions.slug,
+        difficulty: questions.difficulty,
+        tagName: QuestionTag.name
+      })
+      .from(Bookmark)
+      .innerJoin(questions, eq(Bookmark.questionId, questions.id))
+      .leftJoin(_QuestionToQuestionTag, eq(questions.id, _QuestionToQuestionTag.A))
+      .leftJoin(QuestionTag, eq(_QuestionToQuestionTag.B, QuestionTag.id))
+      .where(eq(Bookmark.userId, userId))
+      .limit(20);
+
+    // 6. Calculate difficulty breakdown
+    const difficultyBreakdown = await externalDb
+      .select({
+        difficulty: questions.difficulty,
+        status: Submission.status,
+        count: sql<number>`count(*)::int`
+      })
+      .from(Submission)
+      .innerJoin(questions, eq(Submission.questionId, questions.id))
+      .where(
+        and(
+          eq(Submission.userId, userId),
+          eq(Submission.status, 'ACCEPTED')
+        )
+      )
+      .groupBy(questions.difficulty, Submission.status);
+
+    // Process and structure the data
+    const totalSolved = difficultyBreakdown.reduce((sum, item) => sum + (item.count || 0), 0);
+    
+    const recentActivity = recentSubmissions.map(sub => ({
+      question: sub.title,
+      difficulty: sub.difficulty,
+      status: sub.status,
+      score: sub.score,
+      date: sub.createdAt,
+      tags: sub.tagName ? [sub.tagName] : []
+    }));
+
+    const topTags = tagProgress.map(tag => ({
+      name: tag.tagName,
+      solved: tag.solvedProblems,
+      total: tag.totalProblems,
+      completionRate: tag.totalProblems > 0 ? (tag.solvedProblems / tag.totalProblems) * 100 : 0,
+      breakdown: {
+        easy: tag.easyCount,
+        medium: tag.mediumCount,
+        hard: tag.hardCount
+      }
+    }));
+
+    const bookmarks = bookmarkedQuestions.map(b => ({
+      question: b.slug,
+      difficulty: b.difficulty,
+      tags: b.tagName ? [b.tagName] : []
+    }));
+
+    // Determine user level based on solved problems
+    let userLevel = "Beginner";
+    if (totalSolved >= 100) userLevel = "Advanced";
+    else if (totalSolved >= 50) userLevel = "Intermediate";
+    else if (totalSolved >= 20) userLevel = "Novice";
+
+    // Get weak areas (tags with low completion rate)
+    const weakAreas = topTags
+      .filter(tag => tag.completionRate < 50 && tag.total > 5)
+      .slice(0, 3)
+      .map(tag => tag.name);
+
+    // Get strong areas (tags with high completion rate)
+    const strongAreas = topTags
+      .filter(tag => tag.completionRate > 70 && tag.solved > 3)
+      .slice(0, 3)
+      .map(tag => tag.name);
+
+    console.log("✅ User context fetched successfully for prompt templating");
+
+    return {
+      user: {
+        username: user.username,
+        leetcodeUsername: user.leetcodeUsername,
+        section: user.section,
+        enrollmentNum: user.enrollmentNum,
+        individualPoints: user.individualPoints || 0,
+        rank: user.rank || 'novice_1',
+        userBrief: user.userBrief || 'Just started focusing on DSA to build problem-solving skills for placements.',
+        level: userLevel,
+        totalSolved,
+        currentStreak
+      },
+      recentActivity: {
+        submissions: recentActivity,
+        count: recentActivity.length
+      },
+      progress: {
+        topTags,
+        weakAreas,
+        strongAreas,
+        difficultyBreakdown: formatDifficultyBreakdown(difficultyBreakdown)
+      },
+      bookmarks: {
+        questions: bookmarks,
+        count: bookmarks.length
+      },
+      stats: {
+        leetcodeSolved: user.leetcodeQuestionsSolved || 0,
+        codeforcesSolved: user.codeforcesQuestionsSolved || 0,
+        totalSolved,
+        currentStreak
+      }
+    };
+
+  } catch (error) {
+    const err = error as Error;
+    console.error("❌ Failed to get user context for prompt:", {
+      userId,
+      error: err.message,
+      stack: err.stack,
+    });
+    
+    // Return a minimal context instead of throwing
+    return {
+      user: {
+        username: "Unknown",
+        leetcodeUsername: null,
+        section: null,
+        enrollmentNum: null,
+        individualPoints: 0,
+        rank: 'novice_1',
+        userBrief: 'Just started focusing on DSA to build problem-solving skills for placements.',
+        level: "Beginner",
+        totalSolved: 0,
+        currentStreak: 0
+      },
+      recentActivity: {
+        submissions: [],
+        count: 0
+      },
+      progress: {
+        topTags: [],
+        weakAreas: [],
+        strongAreas: [],
+        difficultyBreakdown: {
+          BEGINNER: { solved: 0, attempted: 0 },
+          EASY: { solved: 0, attempted: 0 },
+          MEDIUM: { solved: 0, attempted: 0 },
+          HARD: { solved: 0, attempted: 0 },
+          VERYHARD: { solved: 0, attempted: 0 }
+        }
+      },
+      bookmarks: {
+        questions: [],
+        count: 0
+      },
+      stats: {
+        leetcodeSolved: 0,
+        codeforcesSolved: 0,
+        totalSolved: 0,
+        currentStreak: 0
+      }
+    };
+  }
+}

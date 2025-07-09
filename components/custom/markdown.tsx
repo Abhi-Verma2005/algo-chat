@@ -4,9 +4,9 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import hljs from 'highlight.js';
 // Import your favorite theme
-import 'highlight.js/styles/tokyo-night-dark.css'; // This is already a good dark theme
+// import 'highlight.js/styles/tokyo-night-dark.css'; // This is already a good dark theme
 // Other great options:
-// import 'highlight.js/styles/github-dark.css';
+import 'highlight.js/styles/github-dark.css';
 // import 'highlight.js/styles/atom-one-dark.css';
 // import 'highlight.js/styles/dracula.css';
 // import 'highlight.js/styles/monokai-sublime.css';
@@ -34,8 +34,8 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
         return (
           <div className="relative my-6 group">
             {/* Header */}
-            <div className="flex items-center justify-between bg-zinc-900 border-b-2 border-fuchsia-600 px-4 py-2 rounded-t-lg">
-              <span className="text-fuchsia-400 text-xs font-mono tracking-widest">
+            <div className="flex items-center justify-between bg-zinc-900 border-b-2 border-fuchsia-300 px-4 py-2 rounded-t-lg">
+              <span className="text-zinc-400 text-xs font-mono tracking-widest">
                 {language.toUpperCase()}
               </span>
               <div className="flex space-x-1">
@@ -57,8 +57,8 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
               />
             </pre>
             {/* Copy button */}
-            <button
-              className="absolute top-2 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-fuchsia-700 hover:bg-fuchsia-600 text-white px-2 py-1 rounded text-xs shadow-lg"
+            <button 
+              className="absolute top-2 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-700 hover:bg-zinc-600 text-white px-2 py-1 rounded text-xs shadow-lg"
               onClick={() => navigator.clipboard.writeText(codeString)}
             >
               Copy
@@ -69,7 +69,7 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
       // Inline code
       return (
         <code
-          className="bg-zinc-800 text-fuchsia-400 text-sm px-1.5 py-0.5 rounded font-mono"
+          className="bg-zinc-800 text-zinc-300 text-sm px-1.5 py-0.5 rounded font-mono"
           {...props}
         >
           {children}
@@ -113,24 +113,24 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
     ),
     blockquote: ({ children, ...props }: any) => (
       <blockquote
-        className="border-l-4 border-fuchsia-600 pl-4 italic text-fuchsia-300 bg-zinc-900/60 my-4 rounded"
+        className="border-l-4 border-zinc-600 pl-4 italic text-zinc-300 bg-zinc-900/60 my-4 rounded"
         {...props}
       >
         {children}
       </blockquote>
     ),
     h1: ({ children, ...props }: any) => (
-      <h1 className="text-3xl font-bold mt-6 mb-3 text-fuchsia-500 dark:text-fuchsia-400" {...props}>
+      <h1 className="text-3xl font-bold mt-6 mb-3 text-zinc-200" {...props}>
         {children}
       </h1>
     ),
     h2: ({ children, ...props }: any) => (
-      <h2 className="text-2xl font-semibold mt-5 mb-2 text-sky-500 dark:text-sky-400" {...props}>
+      <h2 className="text-2xl font-semibold mt-5 mb-2 text-zinc-200" {...props}>
         {children}
       </h2>
     ),
     h3: ({ children, ...props }: any) => (
-      <h3 className="text-xl font-medium mt-4 mb-2 text-teal-500 dark:text-teal-400" {...props}>
+      <h3 className="text-xl font-medium mt-4 mb-2 text-zinc-200" {...props}>
         {children}
       </h3>
     ),

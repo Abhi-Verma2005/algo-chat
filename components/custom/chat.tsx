@@ -13,6 +13,7 @@ import { Overview } from "./overview";
 import { useSidebar } from "@/contexts/SidebarProvider";
 import { Sidebar } from "./Sidebar";
 import { GripVertical } from "lucide-react";
+import { Lightbulb, BarChart2, Shuffle, RefreshCw, ArrowDown } from 'lucide-react';
 
 export function Chat({
   id,
@@ -39,6 +40,7 @@ export function Chat({
   const { isOpen, sidebarWidth, setSidebarWidth } = useSidebar();
   const [isResizing, setIsResizing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   // Handle mouse down on resize handle
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -79,10 +81,28 @@ export function Chat({
     };
   }, [isResizing, setSidebarWidth]);
 
+  // Scroll to bottom logic
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    const handleScroll = () => {
+      const atBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 50;
+      setShowScrollButton(!atBottom);
+    };
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [messagesContainerRef]);
+
+  // DSA Quick Actions
+  const handleAskHint = () => append({ role: 'user', content: 'Give me a hint for my current problem.' });
+  const handleShowProgress = () => append({ role: 'user', content: 'Show my DSA progress.' });
+  const handleRandomProblem = () => append({ role: 'user', content: 'Give me a random DSA problem.' });
+  const handleResetChat = () => window.location.reload();
+
   return (
     <div 
       ref={containerRef}
-      className="flex flex-row h-dvh bg-background relative"
+      className="flex flex-row h-dvh bg-[#181A20] relative"
     >
       {/* Main Chat Area */}
       <div 
@@ -94,6 +114,21 @@ export function Chat({
           maxWidth: isOpen ? `calc(100% - ${sidebarWidth}px)` : '100%'
         }}
       >
+        {/* Sticky Header with DSA Quick Actions */}
+        <div className="sticky top-0 z-20 bg-[#181A20]/80 backdrop-blur-md border-b border-[#23272e] px-4 py-3 flex items-center gap-3 rounded-b-2xl shadow-md">
+          <button onClick={handleAskHint} className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-fuchsia-900/40 text-fuchsia-200 hover:bg-fuchsia-800/80 transition">
+            <Lightbulb className="size-4" /> Hint
+          </button>
+          <button onClick={handleShowProgress} className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-sky-900/40 text-sky-200 hover:bg-sky-800/80 transition">
+            <BarChart2 className="size-4" /> Progress
+          </button>
+          <button onClick={handleRandomProblem} className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-green-900/40 text-green-200 hover:bg-green-800/80 transition">
+            <Shuffle className="size-4" /> Random
+          </button>
+          <button onClick={handleResetChat} className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-zinc-800/60 text-zinc-300 hover:bg-zinc-700/80 transition">
+            <RefreshCw className="size-4" /> Reset
+          </button>
+        </div>
         <div className="flex flex-col justify-between items-center gap-4 h-full">
           <div
             ref={messagesContainerRef}
@@ -101,7 +136,7 @@ export function Chat({
           >
             {messages.length === 0 && <Overview />}
 
-            {messages.map((message) => (
+            {messages.map((message, idx) => (
               <PreviewMessage
                 key={message.id}
                 chatId={id}
@@ -110,14 +145,40 @@ export function Chat({
                 attachments={message.experimental_attachments}
                 toolInvocations={message.toolInvocations}
                 append={append}
+                isStreaming={
+                  message.role === 'assistant' &&
+                  isLoading &&
+                  idx === messages.length - 1
+                }
               />
             ))}
+            {/* Show shimmer as soon as user sends a message */}
+            {isLoading && messages.length > 0 && messages[messages.length - 1].role === 'user' && (
+              <PreviewMessage
+                key="thinking-shimmer"
+                chatId={id}
+                role="assistant"
+                content={''}
+                toolInvocations={[]}
+                isStreaming={true}
+              />
+            )}
 
             <div
               ref={messagesEndRef}
               className="shrink-0 min-w-[24px] min-h-[24px]"
             />
           </div>
+
+          {/* Floating Scroll to Bottom Button */}
+          {showScrollButton && (
+            <button
+              className="fixed bottom-24 right-8 z-30 bg-fuchsia-700 hover:bg-fuchsia-600 text-white p-2 rounded-full shadow-lg transition"
+              onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              <ArrowDown className="size-5" />
+            </button>
+          )}
 
           <form className="flex flex-row gap-2 relative items-end w-full md:max-w-[500px] max-w-[calc(100dvw-32px)] px-4 md:px-0">
             <MultimodalInput

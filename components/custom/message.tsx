@@ -13,6 +13,7 @@ import DSAProgressDashboard from "../dsa/Progress";
 import CompactQuestionsViewer from "../dsa/Questions";
 import { useSidebar } from "@/contexts/SidebarProvider";
 import UserSubmission from "../dsa/UserSubmission";
+import { TextShimmer } from "../ui/text-shimmer";
 
 export const Message = ({
   chatId,
@@ -21,6 +22,7 @@ export const Message = ({
   toolInvocations,
   attachments,
   append,
+  isStreaming = false,
 }: {
   chatId: string;
   role: string;
@@ -28,6 +30,7 @@ export const Message = ({
   toolInvocations: Array<ToolInvocation> | undefined;
   attachments?: Array<Attachment>;
   append?: (message: any) => void;
+  isStreaming?: boolean;
 }) => {
   const { setSidebarContent } = useSidebar();
 
@@ -89,6 +92,12 @@ export const Message = ({
       </div>
 
       <div className="flex flex-col gap-2 w-full">
+        {/* Shimmer above AI message when streaming */}
+        {role === "assistant" && isStreaming && (
+          <div className="mb-2">
+            <TextShimmer as="div" className="text-sm font-medium text-zinc-900 dark:text-zinc-700 text-center">Thinking</TextShimmer>
+          </div>
+        )}
         {content && typeof content === "string" && (
           <div className="text-zinc-800 dark:text-zinc-300 flex flex-col gap-4">
             <Markdown>{content}</Markdown>

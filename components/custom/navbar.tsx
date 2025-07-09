@@ -20,7 +20,7 @@ export const Navbar = async () => {
 
   return (
     <>
-      <div className="bg-background absolute top-0 left-0 w-dvw py-2 px-3 justify-between flex flex-row items-center z-30">
+      <div className="bg-[#181A20]/90 backdrop-blur-md border-b border-[#23272e] absolute top-0 left-0 w-dvw py-3 px-4 justify-between flex flex-row items-center z-30 shadow-lg">
         <div className="flex flex-row gap-3 items-center">
           <History user={session?.user} />
           <Link href={"/"}>
@@ -31,10 +31,10 @@ export const Navbar = async () => {
               width={20}
               alt="gemini logo"
             />
-            <div className="text-zinc-500">
+            <div className="text-zinc-400">
               <SlashIcon size={16} />
             </div>
-            <div className="text-sm dark:text-zinc-300 truncate w-28 md:w-fit">
+            <div className="text-sm text-white font-semibold truncate w-28 md:w-fit">
               Odin AI
             </div>
           </div>
@@ -45,17 +45,17 @@ export const Navbar = async () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                className="py-1.5 px-2 h-fit font-normal"
+                className="py-2 px-3 h-fit font-normal bg-[#23272e] border border-[#2d3138] text-zinc-300 hover:bg-[#2d3138] hover:text-white transition-colors"
                 variant="secondary"
               >
                 {session.user?.email}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
+            <DropdownMenuContent align="end" className="bg-[#181A20] border border-[#23272e]">
+              <DropdownMenuItem className="text-zinc-300 hover:bg-[#23272e] hover:text-white">
                 <ThemeToggle />
               </DropdownMenuItem>
-              <DropdownMenuItem className="p-1 z-50">
+              <DropdownMenuItem className="p-1 z-50 text-zinc-300 hover:bg-[#23272e] hover:text-white">
                 <form
                   className="w-full"
                   action={async () => {
@@ -68,7 +68,7 @@ export const Navbar = async () => {
                 >
                   <button
                     type="submit"
-                    className="w-full text-left px-1 py-0.5 text-red-500"
+                    className="w-full text-left px-1 py-0.5 text-red-400 hover:text-red-300 transition-colors"
                   >
                     Sign out
                   </button>
@@ -77,7 +77,7 @@ export const Navbar = async () => {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Button className="py-1.5 px-2 h-fit font-normal text-white" asChild>
+          <Button className="py-2 px-3 h-fit font-normal text-white bg-green-600 hover:bg-green-700 border-green-700" asChild>
             <Link href="/login">Login</Link>
           </Button>
         )}
