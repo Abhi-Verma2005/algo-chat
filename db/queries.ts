@@ -65,6 +65,7 @@ export async function getExternalUser(userEmail: string) {
     throw error;
   }
 }
+
 export async function getExternalUserByEmail(email: string) {
   try {
     const usersFound = await externalDb

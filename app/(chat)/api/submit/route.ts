@@ -192,6 +192,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<SubmitRes
     // Return success response
     return NextResponse.json({
       success: true,
+      externalUserId: externalUserId,
       message: isUpdate ? 'Code submission updated successfully' : 'Code submission saved successfully',
       submissionId: submission.id,
       isUpdate
