@@ -3,6 +3,7 @@ import React, { memo, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import hljs from 'highlight.js';
+import { MermaidChart } from './mermaid-chart';
 // Import your favorite theme
 // import 'highlight.js/styles/tokyo-night-dark.css'; // This is already a good dark theme
 // Other great options:
@@ -23,8 +24,14 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
     code: ({ node, inline, className, children, ...props }: any) => {
       const match = /language-(\w+)/.exec(className || "");
       const language = match ? match[1] : '';
+      const codeString = String(children).replace(/\n$/, '');
+      
+      // Handle Mermaid diagrams
+      if (!inline && language === 'mermaid') {
+        return <MermaidChart code={codeString} />;
+      }
+      
       if (!inline && match) {
-        const codeString = String(children).replace(/\n$/, '');
         let highlightedCode;
         try {
           highlightedCode = hljs.highlight(codeString, { language }).value;
@@ -133,6 +140,39 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
       <h3 className="text-xl font-medium mt-4 mb-2 text-zinc-200" {...props}>
         {children}
       </h3>
+    ),
+    // Table styling
+    table: ({ children, ...props }: any) => (
+      <div className="overflow-x-auto my-4">
+        <table className="min-w-full border-collapse border border-zinc-600 text-sm text-left text-zinc-300" {...props}>
+          {children}
+        </table>
+      </div>
+    ),
+    thead: ({ children, ...props }: any) => (
+      <thead className="bg-zinc-800 text-zinc-200" {...props}>
+        {children}
+      </thead>
+    ),
+    tbody: ({ children, ...props }: any) => (
+      <tbody className="bg-zinc-900 divide-y divide-zinc-700" {...props}>
+        {children}
+      </tbody>
+    ),
+    tr: ({ children, ...props }: any) => (
+      <tr className="hover:bg-zinc-800 transition-colors" {...props}>
+        {children}
+      </tr>
+    ),
+    th: ({ children, ...props }: any) => (
+      <th className="px-4 py-2 border border-zinc-600 font-medium" {...props}>
+        {children}
+      </th>
+    ),
+    td: ({ children, ...props }: any) => (
+      <td className="px-4 py-2 border border-zinc-600" {...props}>
+        {children}
+      </td>
     ),
   };
 

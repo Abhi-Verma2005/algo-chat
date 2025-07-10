@@ -20,7 +20,7 @@ export const Navbar = async () => {
 
   return (
     <>
-      <div className="bg-[#181A20]/90 backdrop-blur-md border-b border-[#23272e] absolute top-0 left-0 w-dvw py-3 px-4 justify-between flex flex-row items-center z-30 shadow-lg">
+      <div className="bg-[#181A20]/90 backdrop-blur-md absolute top-0 left-0 w-dvw py-3 px-4 justify-between flex flex-row items-center z-30">
         <div className="flex flex-row gap-3 items-center">
           <History user={session?.user} />
           <Link href={"/"}>

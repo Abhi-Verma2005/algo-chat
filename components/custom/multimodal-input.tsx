@@ -18,7 +18,13 @@ import { PreviewAttachment } from "./preview-attachment";
 import useWindowSize from "./use-window-size";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Search, Sparkles, Lightbulb, BarChart2, Shuffle, RefreshCw } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 const suggestedActions = [
   {
@@ -43,6 +49,44 @@ const suggestedActions = [
   },
 ];
 
+const quickActions = [
+  {
+    title: "Get a hint",
+    label: "for current problem",
+    action: "Give me a hint for my current problem.",
+    icon: Lightbulb,
+    color: "text-fuchsia-200 hover:bg-fuchsia-900/40 focus:bg-fuchsia-900/40"
+  },
+  {
+    title: "Show progress",
+    label: "DSA learning progress",
+    action: "Show my DSA progress.",
+    icon: BarChart2,
+    color: "text-sky-200 hover:bg-sky-900/40 focus:bg-sky-900/40"
+  },
+  {
+    title: "Random problem",
+    label: "get a new challenge",
+    action: "Give me a random DSA problem.",
+    icon: Shuffle,
+    color: "text-green-200 hover:bg-green-900/40 focus:bg-green-900/40"
+  },
+  {
+    title: "Search contests",
+    label: "latest programming contests",
+    action: "Search for latest programming contests and competitions.",
+    icon: Search,
+    color: "text-orange-200 hover:bg-orange-900/40 focus:bg-orange-900/40"
+  },
+  {
+    title: "Reset chat",
+    label: "start fresh conversation",
+    action: "Let's start fresh. Reset our conversation.",
+    icon: RefreshCw,
+    color: "text-zinc-300 hover:bg-zinc-800/60 focus:bg-zinc-800/60"
+  },
+];
+
 export function MultimodalInput({
   input,
   setInput,
@@ -53,6 +97,7 @@ export function MultimodalInput({
   messages,
   append,
   handleSubmit,
+  onSearch,
 }: {
   input: string;
   setInput: (value: string) => void;
@@ -71,6 +116,7 @@ export function MultimodalInput({
     },
     chatRequestOptions?: ChatRequestOptions,
   ) => void;
+  onSearch?: (query: string) => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -266,6 +312,58 @@ export function MultimodalInput({
 
         {/* Action Buttons */}
         <div className="absolute bottom-2 right-2 flex items-center gap-2">
+          {/* Quick Actions Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                className="rounded-full p-1.5 h-fit text-white bg-purple-600 hover:bg-purple-700 border-purple-700 shadow-lg"
+                disabled={isLoading}
+              >
+                <Sparkles size={14} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              className="w-56 bg-[#23272e] border-[#2d3138] text-white"
+              align="end"
+            >
+              {quickActions.map((action, index) => {
+                const IconComponent = action.icon;
+                return (
+                  <DropdownMenuItem 
+                    key={index}
+                    className={`flex items-center gap-2 ${action.color}`}
+                    onClick={() => {
+                      append({
+                        role: "user",
+                        content: action.action,
+                      });
+                    }}
+                  >
+                    <IconComponent className="size-4" />
+                    <span>{action.title}</span>
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Search Button */}
+          {onSearch && (
+            <Button
+              className="rounded-full p-1.5 h-fit text-white bg-orange-600 hover:bg-orange-700 border-orange-700 shadow-lg"
+              onClick={(event) => {
+                event.preventDefault();
+                if (input.trim()) {
+                  onSearch(input.trim());
+                  setInput('');
+                }
+              }}
+              disabled={isLoading || !input.trim()}
+            >
+              <Search size={14} />
+            </Button>
+          )}
+
           {/* Teach Button */}
           <Button
             className="rounded-full p-1.5 h-fit text-white bg-indigo-600 hover:bg-indigo-700 border-indigo-700 shadow-lg"

@@ -1,4 +1,4 @@
-// chat.tsx (updated with proper resizable layout)
+// chat.tsx (updated with manual scroll control)
 "use client";
 
 import { Attachment, Message } from "ai";
@@ -13,7 +13,8 @@ import { Overview } from "./overview";
 import { useSidebar } from "@/contexts/SidebarProvider";
 import { Sidebar } from "./Sidebar";
 import { GripVertical } from "lucide-react";
-import { Lightbulb, BarChart2, Shuffle, RefreshCw, ArrowDown } from 'lucide-react';
+import { ArrowDown, Search } from 'lucide-react';
+import { SearchLoader } from './search-loader';
 
 export function Chat({
   id,
@@ -41,6 +42,8 @@ export function Chat({
   const [isResizing, setIsResizing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
 
   // Handle mouse down on resize handle
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -81,23 +84,72 @@ export function Chat({
     };
   }, [isResizing, setSidebarWidth]);
 
-  // Scroll to bottom logic
+  // Manual scroll control
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (!container) return;
+
     const handleScroll = () => {
       const atBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 50;
       setShowScrollButton(!atBottom);
+      setShouldAutoScroll(atBottom);
     };
+
     container.addEventListener('scroll', handleScroll);
     return () => container.removeEventListener('scroll', handleScroll);
   }, [messagesContainerRef]);
 
-  // DSA Quick Actions
-  const handleAskHint = () => append({ role: 'user', content: 'Give me a hint for my current problem.' });
-  const handleShowProgress = () => append({ role: 'user', content: 'Show my DSA progress.' });
-  const handleRandomProblem = () => append({ role: 'user', content: 'Give me a random DSA problem.' });
-  const handleResetChat = () => window.location.reload();
+  // Auto-scroll only when new messages are added (not during streaming)
+  useEffect(() => {
+    if (shouldAutoScroll && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages.length, shouldAutoScroll]); // Only trigger on message count change, not content changes
+  
+  // Search functionality
+  const handleSearch = async (query: string) => {
+    console.log('handleSearch called with query:', query);
+    setIsSearching(true);
+    try {
+      console.log('Making search API call...');
+      const response = await fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      
+      console.log('Search response status:', response.status);
+      
+      if (response.ok) {
+        const results = await response.json();
+        console.log('Search results:', results);
+        
+        // Format results for the AI
+        const searchResults = results.map((r: any, i: number) => 
+          `${i + 1}. **${r.title}**\n   ${r.snippet}\n   Source: ${r.link}`
+        ).join('\n\n');
+        
+        append({ 
+          role: 'user', 
+          content: `Search results for "${query}":\n\n${searchResults}\n\nPlease provide a summary of these results.` 
+        });
+      } else {
+        console.log('Search failed with status:', response.status);
+        append({ 
+          role: 'user', 
+          content: `Search failed for "${query}". Please try a different search term.` 
+        });
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      append({ 
+        role: 'user', 
+        content: `Search failed for "${query}". Please try again later.` 
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   return (
     <div 
@@ -114,21 +166,6 @@ export function Chat({
           maxWidth: isOpen ? `calc(100% - ${sidebarWidth}px)` : '100%'
         }}
       >
-        {/* Sticky Header with DSA Quick Actions */}
-        <div className="sticky top-0 z-20 bg-[#181A20]/80 backdrop-blur-md border-b border-[#23272e] px-4 py-3 flex items-center gap-3 rounded-b-2xl shadow-md">
-          <button onClick={handleAskHint} className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-fuchsia-900/40 text-fuchsia-200 hover:bg-fuchsia-800/80 transition">
-            <Lightbulb className="size-4" /> Hint
-          </button>
-          <button onClick={handleShowProgress} className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-sky-900/40 text-sky-200 hover:bg-sky-800/80 transition">
-            <BarChart2 className="size-4" /> Progress
-          </button>
-          <button onClick={handleRandomProblem} className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-green-900/40 text-green-200 hover:bg-green-800/80 transition">
-            <Shuffle className="size-4" /> Random
-          </button>
-          <button onClick={handleResetChat} className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-zinc-800/60 text-zinc-300 hover:bg-zinc-700/80 transition">
-            <RefreshCw className="size-4" /> Reset
-          </button>
-        </div>
         <div className="flex flex-col justify-between items-center gap-4 h-full">
           <div
             ref={messagesContainerRef}
@@ -163,6 +200,13 @@ export function Chat({
                 isStreaming={true}
               />
             )}
+            
+            {/* Show search loader when searching */}
+            {isSearching && (
+              <div className="w-full max-w-2xl">
+                <SearchLoader />
+              </div>
+            )}
 
             <div
               ref={messagesEndRef}
@@ -174,7 +218,10 @@ export function Chat({
           {showScrollButton && (
             <button
               className="fixed bottom-24 right-8 z-30 bg-fuchsia-700 hover:bg-fuchsia-600 text-white p-2 rounded-full shadow-lg transition"
-              onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                setShouldAutoScroll(true);
+              }}
             >
               <ArrowDown className="size-5" />
             </button>
@@ -191,6 +238,7 @@ export function Chat({
               setAttachments={setAttachments}
               messages={messages}
               append={append}
+              onSearch={handleSearch}
             />
           </form>
         </div>

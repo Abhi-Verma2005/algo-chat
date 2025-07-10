@@ -17,6 +17,7 @@ import {
 } from "@/db/queries";
 import { codeSubmissions } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
+import { SearchService } from "@/lib/search-service";
 
 export async function POST(request: Request) {
   const { id, messages }: { id: string; messages: Array<Message> } =
@@ -41,8 +42,6 @@ export async function POST(request: Request) {
   const systemPrompt = `
 You are an expert DSA (Data Structures & Algorithms) tutor named Odin helping users master programming concepts and problem-solving skills.
 
-
-
 ## Your Teaching Philosophy:
 - **Encouraging but honest**: Celebrate progress while acknowledging real difficulties
 - **Step-by-step guidance**: Never give direct solutions, provide hints and progressive guidance
@@ -56,6 +55,7 @@ You are an expert DSA (Data Structures & Algorithms) tutor named Odin helping us
 - Give hints and guidance for specific problems without revealing solutions
 - Identify weak areas and suggest focused practice
 - Create learning paths for structured skill development
+- **Search the web for current information** when users ask about latest contests, news, or real-time data
 
 ## Guidelines:
 - Reference recent activity and bookmarked problems when relevant
@@ -66,6 +66,8 @@ You are an expert DSA (Data Structures & Algorithms) tutor named Odin helping us
 - Ask clarifying questions to understand what the user needs help with
 - Keep responses concise but comprehensive
 - Use tools to fetch relevant context instead of making assumptions
+- **Use the searchWeb tool** when users ask about current events, latest contests, or information that might be time-sensitive
+- **When using search results**: Present the information in a clear, organized way. Mention the source URLs and provide a summary of the key findings
 
 ## Today's date: ${new Date().toLocaleDateString()}
 
@@ -179,6 +181,43 @@ Remember: Your goal is to guide users to understand concepts and solve problems 
             return {
               found: false,
               error: 'Failed to fetch submission'
+            };
+          }
+        },
+      },
+
+      searchWeb: {
+        description: "Search the web for current information, latest news, or real-time data that might not be in the AI's training data",
+        parameters: z.object({
+          query: z.string().describe("Search query to look up on the web")
+        }),
+        execute: async ({ query }) => {
+          try {
+            const searchService = SearchService.getInstance();
+            const results = await searchService.searchWeb(query);
+            
+            if (results.length === 0) {
+              return {
+                message: `No search results found for: ${query}`,
+                results: []
+              };
+            }
+
+            // Return structured data for the AI
+            return {
+              message: `Found ${results.length} search results for: ${query}`,
+              results: results.map((result, index) => ({
+                rank: index + 1,
+                title: result.title,
+                snippet: result.snippet,
+                url: result.link
+              }))
+            };
+          } catch (error) {
+            console.error('Search tool error:', error);
+            return {
+              message: `Unable to search for: ${query}. Please try a different search term.`,
+              results: []
             };
           }
         },

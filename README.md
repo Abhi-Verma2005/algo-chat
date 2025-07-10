@@ -49,6 +49,33 @@ You will need to use the environment variables [defined in `.env.example`](.env.
 
 > Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various Google Cloud and authentication provider accounts.
 
+### Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```bash
+# Required for AI functionality
+GOOGLE_GENERATIVE_AI_API_KEY=your_google_ai_key_here
+
+# Required for authentication
+AUTH_SECRET=your_auth_secret_here
+
+# Optional: For web search functionality (multi-tier fallback system)
+GOOGLE_CSE_ID=your_google_cse_id_here
+GOOGLE_API_KEY=your_google_api_key_here
+BRAVE_API_KEY=your_brave_api_key_here
+```
+
+### Getting API Keys
+
+1. **Google AI API Key**: Get from [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. **Google CSE ID**: Create a Custom Search Engine at [Google Programmable Search](https://programmablesearchengine.google.com/)
+3. **Google API Key**: Get from [Google Cloud Console](https://console.cloud.google.com/) for Custom Search API
+4. **Brave API Key**: Get free API key from [Brave Search API](https://brave.com/search/api/) (2,000 queries/month free)
+5. **Auth Secret**: Generate a random string for session security
+
+### Setup Steps
+
 1. Install Vercel CLI: `npm i -g vercel`
 2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
 3. Download your environment variables: `vercel env pull`
@@ -59,3 +86,31 @@ pnpm dev
 ```
 
 Your app template should now be running on [localhost:3000](http://localhost:3000/).
+
+### Search Functionality
+
+The app includes a **multi-tier search system** with free fallbacks. To enable this feature:
+
+#### Option 1: Full Setup (Recommended)
+1. **Google CSE**: Create a Custom Search Engine at [Google Programmable Search](https://programmablesearchengine.google.com/)
+2. **Google API Key**: Enable Custom Search API in [Google Cloud Console](https://console.cloud.google.com/)
+3. **Brave API Key**: Get free API key from [Brave Search API](https://brave.com/search/api/) (2,000 queries/month free)
+4. Add all keys to your `.env` file
+5. Restart the development server
+
+#### Option 2: Minimal Setup
+1. **Brave API Key**: Get free API key from [Brave Search API](https://brave.com/search/api/)
+2. Add `BRAVE_API_KEY=your_key_here` to your `.env` file
+3. Restart the development server
+
+#### Search Tiers (in order of preference):
+1. **Google CSE**: For programming-specific queries (LeetCode, Codeforces, etc.)
+2. **Brave Search**: General web search (2,000 free queries/month)
+3. **DuckDuckGo**: Fallback when other APIs fail
+4. **Curated Results**: Final fallback with programming resources
+
+The search feature allows the AI to:
+- Search for current programming contests
+- Look up latest algorithm information
+- Find real-time data and news
+- Provide summaries of search results
