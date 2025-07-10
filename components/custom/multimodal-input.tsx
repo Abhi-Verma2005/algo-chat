@@ -244,25 +244,25 @@ export function MultimodalInput({
       )}
 
       <div className="relative">
-        <Textarea
-          ref={textareaRef}
-          placeholder="Send a message..."
-          value={input}
-          onChange={handleInput}
+      <Textarea
+        ref={textareaRef}
+        placeholder="Send a message..."
+        value={input}
+        onChange={handleInput}
           className="min-h-[72px] max-h-[200px] overflow-hidden resize-none rounded-2xl text-base bg-[#23272e] border border-[#2d3138] text-white placeholder:text-zinc-400 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 shadow-lg backdrop-blur-sm"
-          rows={3}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && !event.shiftKey) {
-              event.preventDefault();
+        rows={3}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
 
-              if (isLoading) {
-                toast.error("Please wait for the model to finish its response!");
-              } else {
-                submitForm();
-              }
+            if (isLoading) {
+              toast.error("Please wait for the model to finish its response!");
+            } else {
+              submitForm();
             }
-          }}
-        />
+          }
+        }}
+      />
 
         {/* Action Buttons */}
         <div className="absolute bottom-2 right-2 flex items-center gap-2">
@@ -280,28 +280,28 @@ export function MultimodalInput({
           </Button>
 
           {/* Send/Stop Button */}
-          {isLoading ? (
-            <Button
+      {isLoading ? (
+        <Button
               className="rounded-full p-1.5 h-fit text-white bg-red-600 hover:bg-red-700 border-red-700 shadow-lg"
-              onClick={(event) => {
-                event.preventDefault();
-                stop();
-              }}
-            >
-              <StopIcon size={14} />
-            </Button>
-          ) : (
-            <Button
+          onClick={(event) => {
+            event.preventDefault();
+            stop();
+          }}
+        >
+          <StopIcon size={14} />
+        </Button>
+      ) : (
+        <Button
               className="rounded-full p-1.5 h-fit text-white bg-blue-600 hover:bg-blue-700 border-blue-700 shadow-lg"
-              onClick={(event) => {
-                event.preventDefault();
-                submitForm();
-              }}
-              disabled={input.length === 0 || uploadQueue.length > 0}
-            >
-              <ArrowUpIcon size={14} />
-            </Button>
-          )}
+          onClick={(event) => {
+            event.preventDefault();
+            submitForm();
+          }}
+          disabled={input.length === 0 || uploadQueue.length > 0}
+        >
+          <ArrowUpIcon size={14} />
+        </Button>
+      )}
         </div>
       </div>
       

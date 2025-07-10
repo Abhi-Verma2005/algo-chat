@@ -13,7 +13,7 @@ import DSAProgressDashboard from "../dsa/Progress";
 import CompactQuestionsViewer from "../dsa/Questions";
 import { useSidebar } from "@/contexts/SidebarProvider";
 import UserSubmission from "../dsa/UserSubmission";
-import { TextShimmer } from "../ui/text-shimmer";
+import { ShiningText } from "../ui/shining-text";
 
 export const Message = ({
   chatId,
@@ -95,7 +95,7 @@ export const Message = ({
         {/* Shimmer above AI message when streaming */}
         {role === "assistant" && isStreaming && (
           <div className="mb-2">
-            <TextShimmer as="div" className="text-sm font-medium text-zinc-900 dark:text-zinc-700 text-center">Thinking</TextShimmer>
+            <ShiningText text="Thinking..." />
           </div>
         )}
         {content && typeof content === "string" && (
